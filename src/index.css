@@ -14,208 +14,108 @@ body {
 body {
   font-family: "Gen Interface JP", "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: #f4f3f0;
-  color: #111;
+  background: #fff;
+  color: #0a0a0a;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+  position: fixed;
+  inset: 0;
   overflow: hidden;
 }
 
-.logo {
-  margin: 0;
-  line-height: 1.2;
+/* —— Stage ————————————————————————————————————————————————
+   The comp is authored at 1440x1024. Everything inside is positioned in those
+   units and the stage is placed and scaled from JS (see useStageFit), so the
+   collage keeps its exact proportions instead of reflowing. */
+
+.stage {
   position: absolute;
-  top: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  font-family: "Gen Interface JP Display", "Gen Interface JP", sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: #000;
-  user-select: none;
-  pointer-events: none;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
 }
 
-/* —— Folder cards —— */
+/* —— Folders ——————————————————————————————————————————————— */
 
 .folder {
   position: absolute;
-  min-height: 180px;
-  background: #fff;
-  border: 1.5px solid #1a1a1a;
-  border-radius: 12px;
-  /* Smooth curve from tab into body: soften top-left where tab joins */
-  border-top-left-radius: 0;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.06),
-    0 8px 24px rgba(0, 0, 0, 0.04);
-  user-select: none;
-  pointer-events: none;
 }
 
-/* Tab: real folder-tab geometry with smooth curve into the body */
-.folder__tab {
+/* The 1.45 stroke straddles the path, so let it spill rather than padding the
+   box — that keeps each folder's box identical to its design coordinates. */
+.folder__outline {
   position: absolute;
-  top: -26px;
-  left: -1.5px;
-  display: inline-flex;
-  align-items: center;
-  height: 26px;
-  padding: 0 16px 0 14px;
-  background: #fff;
-  border: 1.5px solid #1a1a1a;
-  border-bottom: none;
-  /* Soft curve on the outer/right edge of the tab into the body */
-  border-radius: 10px 14px 0 0;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-  line-height: 1;
-  z-index: 1;
-}
-
-/* Cover the seam where tab meets body so the border reads continuous */
-.folder__tab::after {
-  content: "";
-  position: absolute;
+  top: 0;
   left: 0;
-  right: 0;
-  bottom: -3px;
-  height: 5px;
-  background: #fff;
+  display: block;
+  overflow: visible;
 }
 
-/* Right-edge fillet: soft curve from tab down into the folder body top edge */
-.folder__tab::before {
-  content: "";
+/* —— Type ————————————————————————————————————————————————
+   `top` is the cap-height top taken from the design; --cap trims the line box
+   above the cap and --lsb backs out the first glyph's left side bearing, since
+   the design coordinates are ink edges. */
+
+.wordmark,
+.lede,
+.label,
+.tagline {
   position: absolute;
-  right: -11px;
-  bottom: 0;
-  width: 12px;
-  height: 12px;
-  background: transparent;
-  border-bottom-left-radius: 12px;
-  box-shadow: -3px 3px 0 0 #fff;
-  /* Mask the body's top border under the curve */
-  pointer-events: none;
+  transform: translate(calc(-1 * var(--lsb, 0px)), calc(-1 * var(--cap)));
+  white-space: pre-wrap;
 }
 
-.folder__tab--spacer {
-  width: 48px;
-  padding: 0;
-  visibility: hidden;
-}
-
-.folder--no-tab {
-  border-top-left-radius: 12px;
-}
-
-.folder--no-tab .folder__tab--spacer {
-  display: none;
-}
-
-.folder__body {
-  padding: 28px 22px 22px;
-  font-size: 14px;
-  line-height: 1.55;
-  letter-spacing: -0.01em;
-  color: #222;
-}
-
-.folder--empty {
-  min-height: 150px;
-}
-
-.folder--empty .folder__body {
-  display: none;
-}
-
-.folder--tagline {
-  min-height: 170px;
-}
-
-.folder--tagline .folder__body {
-  position: absolute;
-  right: 22px;
-  bottom: 20px;
-  left: auto;
-  padding: 0;
-  max-width: 210px;
-  text-align: right;
-  font-size: 15px;
+.wordmark {
+  --cap: 12px;
+  --lsb: 5px;
+  font-family: "Gen Interface JP Display", "Gen Interface JP", sans-serif;
+  font-size: 87.4px;
   font-weight: 500;
-  line-height: 1.4;
-  letter-spacing: -0.02em;
-  color: #111;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
-.folder--main {
-  min-height: 230px;
+.lede {
+  --cap: 8px;
+  --lsb: 1px;
+  font-size: 33.48px;
+  font-weight: 400;
+  line-height: 41.96px;
+  letter-spacing: 0;
 }
 
-.folder--main .folder__body {
-  font-size: 15px;
-  line-height: 1.6;
+.label {
+  --cap: 3px;
+  --lsb: 1.5px;
+  font-size: 22.34px;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-/* Mobile: keep composition readable; scale widths, nudge toward center */
-@media (max-width: 900px) {
-  .folder {
-    min-height: 140px;
-  }
-
-  .folder--main {
-    left: 8% !important;
-    top: 30% !important;
-    width: min(360px, calc(100vw - 48px)) !important;
-  }
-
-  .folder--empty {
-    width: min(180px, 42vw) !important;
-  }
-
-  .folder--tagline {
-    left: 42% !important;
-    top: 58% !important;
-    width: min(260px, calc(100vw - 64px)) !important;
-  }
+.tagline {
+  --cap: 5px;
+  --lsb: 1px;
+  font-size: 24.2px;
+  font-weight: 400;
+  line-height: 30.2px;
 }
 
-@media (max-width: 640px) {
-  .logo {
-    top: 20px;
-    font-size: 20px;
-  }
+/* —— Dragging (narrow viewports only) ——————————————————————————
+   The folders become cards you can push around, so the stack reads as a pile of
+   real folders rather than as panels that trail off the bottom of the screen. */
 
-  .folder--main {
-    left: 5% !important;
-    top: 26% !important;
-    width: calc(100vw - 40px) !important;
-    z-index: 20 !important;
-  }
+.stage--draggable .folder {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 
-  .folder--empty {
-    opacity: 0.85;
-  }
-
-  .folder--tagline {
-    left: 8% !important;
-    top: 62% !important;
-    width: calc(100vw - 48px) !important;
-  }
-
-  .folder__tab {
-    font-size: 11px;
-    padding: 0 12px 0 10px;
-  }
+.stage--draggable .folder:active {
+  cursor: grabbing;
 }

@@ -4,7 +4,7 @@ import "gen-interface-jp/400.css"
 import "gen-interface-jp/500.css"
 import "gen-interface-jp/600.css"
 import "gen-interface-jp/700.css"
-import "gen-interface-jp/display-700.css"
+import "gen-interface-jp/display-500.css"
 import App from "./App.jsx"
 import "./index.css"
 
