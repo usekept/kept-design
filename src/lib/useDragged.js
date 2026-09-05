@@ -1,8 +1,7 @@
 import { useCallback, useRef, useState } from "react"
 
 /**
- * Pointer-drag offsets for the folders, in design units. Dragging is only wired
- * up on narrow viewports; the wide comp is a fixed composition.
+ * Pointer-drag offsets for the folders, in design units, at every viewport.
  *
  * `scale` converts pointer travel in CSS pixels back into design units, so a
  * folder tracks the finger exactly however the stage is scaled.
@@ -46,11 +45,5 @@ export default function useDragged(scale) {
     if (drag.current?.pointerId === event.pointerId) drag.current = null
   }, [])
 
-  /** Reset when leaving narrow mode, so the wide comp is never left displaced. */
-  const reset = useCallback(() => {
-    setOffsets({})
-    setFront([])
-  }, [])
-
-  return { offsets, front, reset, handlers: { onPointerDown, onPointerMove, onPointerUp } }
+  return { offsets, front, handlers: { onPointerDown, onPointerMove, onPointerUp } }
 }

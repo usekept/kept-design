@@ -10,8 +10,12 @@
 export const FRAME_W = 1440
 export const FRAME_H = 1024
 
-/** On wide viewports the lower folders run off the bottom edge, as drawn. */
-export const BLEED_BOTTOM = 2400
+/**
+ * Every folder is the same depth. The four lower ones still run off the bottom
+ * edge as drawn — they just stop a little past it rather than being stretched to
+ * the foot of the stage, which left them absurdly long once they became draggable.
+ */
+export const FOLDER_H = 471.31
 
 /**
  * Below this width the comp is cropped rather than fitted — a uniform fit would
@@ -22,10 +26,28 @@ export const BLEED_BOTTOM = 2400
 export const NARROW_MAX_W = 860
 export const FOCUS = { x: 188.6, y: 60, w: 708 }
 
-/** Design-space width of the wordmark's ink, used to re-centre it when cropped. */
-export const WORDMARK_W = 181
+/**
+ * The wordmark is the artwork in `public/`, not set type. `y` is the ink's
+ * cap-height top, which is where the SVG's own box starts, so the image is
+ * placed at that coordinate directly; `x` is derived so the mark keeps the
+ * optical centre it has in the comp however it is scaled.
+ */
+const WORDMARK_INK = { w: 173.4, h: 84.42, centreX: 717 }
 
-export const WORDMARK = { text: "kept.", x: 630.26, y: 132.27 }
+/** Drawn at 55.25% of its size in the comp — 85%, then 35% off that again. */
+const WORDMARK_SCALE = 0.5525
+
+/** Design-space width of the wordmark as drawn, used to re-centre it when cropped. */
+export const WORDMARK_W = WORDMARK_INK.w * WORDMARK_SCALE
+
+export const WORDMARK = {
+  src: "/KEPT%20WORDMARK.svg",
+  alt: "Kept",
+  x: WORDMARK_INK.centreX - WORDMARK_W / 2,
+  y: 132.27,
+  w: WORDMARK_W,
+  h: WORDMARK_INK.h * WORDMARK_SCALE,
+}
 
 /**
  * Both paragraphs are hard-broken in the design rather than wrapped — the
@@ -34,9 +56,9 @@ export const WORDMARK = { text: "kept.", x: 630.26, y: 132.27 }
  * assistive tech.
  */
 export const LEDE = {
-  text: "You capture a lot. We help you keep it. Kept is a private workspace for your research, references, and ideas — organized, searchable, and ready when you are.",
+  text: "You capture a lot. This helps you keep it. Kept is a private workspace for your research, references, and ideas — organized, searchable, and ready when you are.",
   lines: [
-    "You capture a lot. We help you",
+    "You capture a lot. This helps you",
     "keep it. Kept is a private workspace",
     "for your research, references, and",
     "ideas — organized, searchable,",
@@ -51,47 +73,54 @@ export const TAGLINE = {
   lines: ["Your", "reference manager", "for everything", "that matters."],
   dx: 398.315,
   dy: 217.359,
-  /** In the comp this sits in the Researchers folder; in the mobile pile that
+  /** In the comp this sits in the References folder; in the mobile pile that
    *  folder is buried, so the line rides the topmost folder instead. */
   owner: "researchers",
   mobile: { owner: "builders", dx: 385, dy: 96 },
 }
 
 /**
- * Listed in paint order — each folder's white fill covers the outlines behind it.
+ * Listed in paint order — each folder's fill covers the outlines behind it.
+ * `accent` is the folder's own colour: its outline, its label, and whatever copy
+ * it carries all take it.
+ * `bleed` marks the four that hang off the bottom edge of the wide comp; on
+ * narrow viewports those are the ones restacked into the pile.
  * Label offsets are measured per folder rather than shared: the comp's tab labels
  * are hand-placed and sit up to 4 units apart relative to their tabs.
  */
 export const FOLDERS = [
   {
     id: "personal",
+    accent: "#1e8bd3",
     x: 222.133,
     y: 297.465,
     w: 641.29,
-    h: 471.31,
     tabW: 294.57,
     label: { text: "Personal knowledge", dx: 28.967, dy: 31.845 },
   },
   {
     id: "researchers",
+    accent: "#f0c800",
     x: 759.115,
     y: 651.911,
     w: 627.78,
     tabW: 295.54,
     bleed: true,
-    label: { text: "Researchers", dx: 28.965, dy: 32.849 },
+    label: { text: "References", dx: 28.965, dy: 32.849 },
   },
   {
     id: "creatives",
+    accent: "#0f966c",
     x: 399.84,
     y: 725.312,
     w: 629.7,
     tabW: 293.6,
     bleed: true,
-    label: { text: "Creatives", dx: 27.03, dy: 29.008 },
+    label: { text: "Research", dx: 27.03, dy: 29.008 },
   },
   {
     id: "agents",
+    accent: "#f34036",
     x: 56.982,
     y: 790.021,
     w: 653.84,
@@ -101,6 +130,7 @@ export const FOLDERS = [
   },
   {
     id: "builders",
+    accent: "#f08c28",
     x: 587.203,
     y: 862.455,
     w: 545.67,
@@ -115,7 +145,7 @@ export const FOLDERS = [
  * into a pile, so the stack reads as a set of real folders rather than as panels
  * trailing off the bottom of the screen.
  */
-const MOBILE_FOLDER = { x: 222, y: 297, w: 641.29, h: 471.31, tabW: 294.57 }
+const MOBILE_FOLDER = { x: 222, y: 297, w: 641.29, h: FOLDER_H, tabW: 294.57 }
 
 const STACK = {
   top: 790,
@@ -129,10 +159,7 @@ const STACK = {
 /** Folder geometry for the current mode. */
 export function layoutFolders({ narrow, visibleBottom }) {
   if (!narrow) {
-    return FOLDERS.map((f) => ({
-      ...f,
-      h: f.bleed ? BLEED_BOTTOM - f.y : f.h,
-    }))
+    return FOLDERS.map((f) => ({ ...f, h: FOLDER_H }))
   }
 
   // Tighten the stagger until the topmost folder has room for its tagline.

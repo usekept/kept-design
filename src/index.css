@@ -1,3 +1,13 @@
+:root {
+  /* Ground for the page; the folders take it as an opaque fill so each one
+     occludes the outlines behind it — they read as unfilled, but they are not
+     transparent. Each folder then overrides --ink with its own accent, which
+     carries its outline, its label and any copy it holds. */
+  --ground: #ffffff;
+  --ink: #0a0a0a;
+  --folder: var(--ground);
+}
+
 *,
 *::before,
 *::after {
@@ -14,8 +24,8 @@ body {
 body {
   font-family: "Gen Interface JP", "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: #fff;
-  color: #0a0a0a;
+  background: var(--ground);
+  color: var(--ink);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -39,10 +49,21 @@ body {
   transform-origin: top left;
 }
 
-/* —— Folders ——————————————————————————————————————————————— */
+/* —— Folders ——————————————————————————————————————————————
+   Every folder is a card you can push around, so the collage reads as a real
+   pile of folders rather than as artwork. */
 
 .folder {
   position: absolute;
+  color: var(--ink);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.folder:active {
+  cursor: grabbing;
 }
 
 /* The 1.45 stroke straddles the path, so let it spill rather than padding the
@@ -60,7 +81,6 @@ body {
    above the cap and --lsb backs out the first glyph's left side bearing, since
    the design coordinates are ink edges. */
 
-.wordmark,
 .lede,
 .label,
 .tagline {
@@ -69,14 +89,14 @@ body {
   white-space: pre-wrap;
 }
 
+/* Artwork, not set type — placed at its ink box, so no cap trim or bearing. */
 .wordmark {
-  --cap: 12px;
-  --lsb: 5px;
-  font-family: "Gen Interface JP Display", "Gen Interface JP", sans-serif;
-  font-size: 87.4px;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0;
+  position: absolute;
+  line-height: 0;
+}
+
+.wordmark img {
+  display: block;
 }
 
 .lede {
@@ -103,19 +123,4 @@ body {
   font-size: 24.2px;
   font-weight: 400;
   line-height: 30.2px;
-}
-
-/* —— Dragging (narrow viewports only) ——————————————————————————
-   The folders become cards you can push around, so the stack reads as a pile of
-   real folders rather than as panels that trail off the bottom of the screen. */
-
-.stage--draggable .folder {
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.stage--draggable .folder:active {
-  cursor: grabbing;
 }

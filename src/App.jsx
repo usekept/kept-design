@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import BrokenLines from "./components/BrokenLines.jsx"
 import Folder from "./components/Folder.jsx"
 import useDragged from "./lib/useDragged.js"
@@ -16,12 +15,7 @@ import {
 
 export default function App() {
   const { narrow, scale, x, y, visibleBottom } = useStageFit()
-  const { offsets, front, reset, handlers } = useDragged(scale)
-
-  // The wide comp is a fixed composition, so drop any dragging done on mobile.
-  useEffect(() => {
-    if (!narrow) reset()
-  }, [narrow, reset])
+  const { offsets, front, handlers } = useDragged(scale)
 
   const folders = layoutFolders({ narrow, visibleBottom })
   const tagline = narrow ? TAGLINE.mobile : TAGLINE
@@ -31,7 +25,7 @@ export default function App() {
 
   return (
     <main
-      className={`stage${narrow ? " stage--draggable" : ""}`}
+      className="stage"
       style={{
         width: FRAME_W,
         height: FRAME_H,
@@ -39,7 +33,7 @@ export default function App() {
       }}
     >
       <h1 className="wordmark" style={{ left: wordmarkLeft, top: WORDMARK.y }}>
-        {WORDMARK.text}
+        <img src={WORDMARK.src} alt={WORDMARK.alt} width={WORDMARK.w} height={WORDMARK.h} />
       </h1>
 
       {folders.map((folder, i) => {
@@ -50,7 +44,6 @@ export default function App() {
             folder={folder}
             offset={offsets[folder.id]}
             zIndex={lifted === -1 ? i : folders.length + lifted}
-            draggable={narrow}
             handlers={handlers}
           >
             {folder.id === "personal" && (

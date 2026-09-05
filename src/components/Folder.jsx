@@ -7,8 +7,8 @@ import { folderPath } from "../lib/folderPath.js"
  * The stroke straddles the path, so the SVG is left overflowing rather than
  * padded — that keeps the folder's box identical to its design coordinates.
  */
-export default function Folder({ folder, offset, zIndex, draggable, handlers, children }) {
-  const { id, x, y, w, h, tabW, label } = folder
+export default function Folder({ folder, offset, zIndex, handlers, children }) {
+  const { id, x, y, w, h, tabW, label, accent } = folder
   const dx = offset?.x ?? 0
   const dy = offset?.y ?? 0
 
@@ -18,11 +18,11 @@ export default function Folder({ folder, offset, zIndex, draggable, handlers, ch
       data-id={id}
       role="group"
       aria-label={label.text}
-      style={{ left: x + dx, top: y + dy, width: w, height: h, zIndex }}
-      onPointerDown={draggable ? handlers.onPointerDown(id) : undefined}
-      onPointerMove={draggable ? handlers.onPointerMove : undefined}
-      onPointerUp={draggable ? handlers.onPointerUp : undefined}
-      onPointerCancel={draggable ? handlers.onPointerUp : undefined}
+      style={{ left: x + dx, top: y + dy, width: w, height: h, zIndex, "--ink": accent }}
+      onPointerDown={handlers.onPointerDown(id)}
+      onPointerMove={handlers.onPointerMove}
+      onPointerUp={handlers.onPointerUp}
+      onPointerCancel={handlers.onPointerUp}
     >
       <svg
         className="folder__outline"
@@ -35,8 +35,8 @@ export default function Folder({ folder, offset, zIndex, draggable, handlers, ch
       >
         <path
           d={folderPath(w, h, tabW)}
-          fill="#fff"
-          stroke="#0A0A0A"
+          fill="var(--folder)"
+          stroke="var(--ink)"
           strokeWidth="1.45"
           strokeLinejoin="round"
         />
