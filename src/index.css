@@ -1,126 +1,156 @@
 :root {
-  /* Ground for the page; the folders take it as an opaque fill so each one
-     occludes the outlines behind it — they read as unfilled, but they are not
-     transparent. Each folder then overrides --ink with its own accent, which
-     carries its outline, its label and any copy it holds. */
-  --ground: #ffffff;
-  --ink: #0a0a0a;
-  --folder: var(--ground);
+  color-scheme: light;
+  --paper: #ffffff;
+  --accent-light: color-mix(in srgb, var(--accent) 10%, var(--paper));
+  --font-interface: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Consolas, monospace;
+  --page-width: 71.5rem;
+  --page-gutter: clamp(1.25rem, 4vw, 4rem);
+  /* --accent is supplied by src/config/site.js through the entry point. */
 }
 
-*,
-*::before,
-*::after {
+* {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html,
 body {
-  height: 100%;
+  margin: 0;
 }
 
 body {
-  font-family: "Gen Interface JP", "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: var(--ground);
-  color: var(--ink);
-  overflow: hidden;
+  background: var(--paper);
+  color: var(--accent);
+  font-family: var(--font-interface);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-#root {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
-/* —— Stage ————————————————————————————————————————————————
-   The comp is authored at 1440x1024. Everything inside is positioned in those
-   units and the stage is placed and scaled from JS (see useStageFit), so the
-   collage keeps its exact proportions instead of reflowing. */
-
-.stage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform-origin: top left;
+a {
+  color: inherit;
 }
 
-/* —— Folders ——————————————————————————————————————————————
-   Every folder is a card you can push around, so the collage reads as a real
-   pile of folders rather than as artwork. */
-
-.folder {
-  position: absolute;
-  color: var(--ink);
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 
-.folder:active {
-  cursor: grabbing;
+::selection {
+  background: var(--accent-light);
+  color: var(--accent);
 }
 
-/* The 1.45 stroke straddles the path, so let it spill rather than padding the
-   box — that keeps each folder's box identical to its design coordinates. */
-.folder__outline {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: block;
-  overflow: visible;
+.page {
+  min-height: 100svh;
 }
 
-/* —— Type ————————————————————————————————————————————————
-   `top` is the cap-height top taken from the design; --cap trims the line box
-   above the cap and --lsb backs out the first glyph's left side bearing, since
-   the design coordinates are ink edges. */
+.site-masthead,
+.main {
+  width: min(var(--page-width), 100% - 2 * var(--page-gutter));
+  margin-inline: auto;
+}
 
-.lede,
-.label,
-.tagline {
-  position: absolute;
-  transform: translate(calc(-1 * var(--lsb, 0px)), calc(-1 * var(--cap)));
+.site-masthead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem 1.5rem;
+  padding-top: 1.75rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.masthead-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.5rem;
+  min-width: 0;
+}
+
+.site-masthead h1,
+.site-masthead p {
+  margin: 0;
+  font-size: inherit;
+  overflow-wrap: anywhere;
+}
+
+.masthead-name {
+  font-weight: 600;
+}
+
+.masthead-name a {
+  text-decoration: none;
+}
+
+.masthead-name a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.masthead-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.5rem;
+  max-width: 100%;
+}
+
+.main {
+  padding-block: clamp(8rem, 22svh, 18rem) 5rem;
+}
+
+.intro {
+  max-width: 45ch;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.status-pill {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0.1875rem 0.5625rem;
+  border-radius: 999px;
+  background: var(--accent-light);
+  font-size: 0.5625rem;
+  line-height: 1.5;
+}
+
+.intro p {
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.project-context {
+  margin: 2rem 0 0;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.6;
   white-space: pre-wrap;
 }
 
-/* Artwork, not set type — placed at its ink box, so no cap trim or bearing. */
-.wordmark {
-  position: absolute;
-  line-height: 0;
-}
+@media (max-width: 42rem) {
+  .site-masthead {
+    padding-top: 1.5rem;
+    gap: 1rem;
+  }
 
-.wordmark img {
-  display: block;
-}
+  .masthead-identity {
+    display: block;
+  }
 
-.lede {
-  --cap: 8px;
-  --lsb: 1px;
-  font-size: 33.48px;
-  font-weight: 400;
-  line-height: 41.96px;
-  letter-spacing: 0;
-}
+  .site-masthead .masthead-name {
+    margin-bottom: 0.25rem;
+  }
 
-.label {
-  --cap: 3px;
-  --lsb: 1.5px;
-  font-size: 22.34px;
-  font-weight: 400;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.tagline {
-  --cap: 5px;
-  --lsb: 1px;
-  font-size: 24.2px;
-  font-weight: 400;
-  line-height: 30.2px;
+  .main {
+    padding-block: 6rem 4rem;
+  }
 }
