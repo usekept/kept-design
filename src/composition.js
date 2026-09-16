@@ -19,8 +19,8 @@ export const FOLDER_H = 471.31
 
 /**
  * Below this width the comp is cropped rather than fitted — a uniform fit would
- * put the lede at around 9px. FOCUS frames the wordmark and the Personal
- * knowledge folder, centred on that folder; the wordmark is re-centred separately
+ * put the lede at around 9px. FOCUS frames the wordmark and the Working
+ * surface folder, centred on that folder; the wordmark is re-centred separately
  * because the comp centres it on the full 1440 frame rather than on the collage.
  */
 export const NARROW_MAX_W = 860
@@ -56,21 +56,21 @@ export const WORDMARK = {
  * assistive tech.
  */
 export const LEDE = {
-  text: "You capture a lot. This helps you keep it. Kept is a private workspace for your research, references, and ideas — organized, searchable, and ready when you are.",
+  text: "You capture a lot. This helps you keep it. Kept is where references land — a local canvas you paste into, arrange, annotate, and return to.",
   lines: [
     "You capture a lot. This helps you",
-    "keep it. Kept is a private workspace",
-    "for your research, references, and",
-    "ideas — organized, searchable,",
-    "and ready when you are.",
+    "keep it. Kept is where references",
+    "land — a local canvas you paste",
+    "into, arrange, annotate, and",
+    "return to.",
   ],
   dx: 27.547,
   dy: 210.575,
 }
 
 export const TAGLINE = {
-  text: "Your reference manager for everything that matters.",
-  lines: ["Your", "reference manager", "for everything", "that matters."],
+  text: "Your working surface for visual references.",
+  lines: ["Your", "working surface", "for visual", "references."],
   dx: 398.315,
   dy: 217.359,
   /** In the comp this sits in the References folder; in the mobile pile that
@@ -96,7 +96,7 @@ export const FOLDERS = [
     y: 297.465,
     w: 641.29,
     tabW: 294.57,
-    label: { text: "Personal knowledge", dx: 28.967, dy: 31.845 },
+    label: { text: "Working surface", dx: 28.967, dy: 31.845 },
   },
   {
     id: "researchers",
@@ -116,7 +116,7 @@ export const FOLDERS = [
     w: 629.7,
     tabW: 293.6,
     bleed: true,
-    label: { text: "Research", dx: 27.03, dy: 29.008 },
+    label: { text: "Arrange", dx: 27.03, dy: 29.008 },
   },
   {
     id: "agents",
@@ -126,7 +126,7 @@ export const FOLDERS = [
     w: 653.84,
     tabW: 291.67,
     bleed: true,
-    label: { text: "Agents", dx: 26.068, dy: 28.949 },
+    label: { text: "Annotate", dx: 26.068, dy: 28.949 },
   },
   {
     id: "builders",
@@ -136,7 +136,7 @@ export const FOLDERS = [
     w: 545.67,
     tabW: 282.98,
     bleed: true,
-    label: { text: "Builders", dx: 27.967, dy: 30.915 },
+    label: { text: "Local-first", dx: 27.967, dy: 30.915 },
   },
 ]
 
