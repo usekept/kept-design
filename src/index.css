@@ -19,7 +19,7 @@ body {
 
 body {
   background: var(--paper);
-  color: var(--accent);
+  color: #000000;
   font-family: var(--font-interface);
   -webkit-font-smoothing: antialiased;
 }
@@ -41,8 +41,8 @@ a {
 }
 
 ::selection {
-  background: var(--accent-light);
-  color: var(--accent);
+  background: #FFC7FF;
+  color: #000000;
 }
 
 .page {
@@ -117,7 +117,8 @@ a {
   margin: 0 0 0.75rem;
   padding: 0.1875rem 0.5625rem;
   border-radius: 999px;
-  background: var(--accent-light);
+  background: #F7EAF7;
+  color: #753D75;
   font-size: 0.5625rem;
   line-height: 1.5;
 }
@@ -134,6 +135,20 @@ a {
   font-weight: 400;
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+.owner-link {
+  outline: 1px dotted #dddddd;
+  outline-offset: 3px;
+  text-decoration: none;
+}
+
+.owner-link:hover {
+  outline-color: #999999;
+}
+
+.owner-link:focus-visible {
+  outline: 2px solid currentColor;
 }
 
 @media (max-width: 42rem) {

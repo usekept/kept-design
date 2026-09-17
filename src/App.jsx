@@ -17,13 +17,12 @@ export default function App() {
             Local-first visual reference canvas — paste images, arrange them,
             annotate lightly, and keep working without the weight of a full design tool.
           </p>
-          <pre className="project-context">{`DF.4.2    PROJECT CONTEXT
+          <pre className="project-context">{`DF.4.2    VISUAL WORKING SURFACE
 
-RG.018    REFERENCE SYSTEM
-          CREATED 16 SEP 2026
+RG.001    REFERENCE SYSTEM
 
 STATUS    ACTIVE
-OWNER     WADE`}</pre>
+STUDIO    `}<a className="owner-link" href="https://onwend.com/">ONWEND</a></pre>
         </div>
       </main>
     </div>
