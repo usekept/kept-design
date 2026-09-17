@@ -1,7 +1,11 @@
 # Kept design
 
-The UI is based on `tool-site-base`, customized with KEPT branding, a coral
-accent (#FA586A), SF Mono typography (with monospace fallbacks), a product summary,
+Marketing landing for Kept: a lightweight, local-first visual working surface for references.
+
+Positioning follows the Kept Linear project — **Kept is where references land.** V0 is canvas-first (`open → paste/drop → arrange → annotate → close → reopen → continue`), not a searchable library or AI workspace.
+
+The UI is based on `tool-site-base`, customized with KEPT branding, black text,
+pink selection highlights, SF Mono typography (with monospace fallbacks), a product summary,
 an early-development pill, and project context.
 This repository retains React + Vite rather than adopting the template's Next.js runtime.
 
