@@ -1,13 +1,14 @@
 import { SiteMasthead } from "./components/SiteMasthead.jsx"
 import { siteConfig } from "./config/site.js"
+import { isKeptOperatePath } from "./kept/href.ts"
+import { KeptApp } from "./kept/KeptApp.tsx"
 import { currentPath } from "./lib/path.js"
-import { LibraryPage } from "./pages/Library.jsx"
 import { SystemMapPage } from "./pages/SystemMap.jsx"
 
 export default function App() {
   const path = currentPath()
   if (path === "/map") return <SystemMapPage />
-  if (path === "/library") return <LibraryPage />
+  if (isKeptOperatePath(path)) return <KeptApp />
   return <HomePage />
 }
 

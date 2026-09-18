@@ -44,7 +44,12 @@ body {
   margin: 0;
 }
 
+#root {
+  isolation: isolate;
+}
+
 body {
+  position: relative;
   background: var(--paper);
   color: #000000;
   font-family: var(--font-interface);
@@ -58,11 +63,13 @@ select {
   font: inherit;
 }
 
-a {
+.page a,
+.map-page a {
   color: inherit;
 }
 
-:focus-visible {
+.page :focus-visible,
+.map-page :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
