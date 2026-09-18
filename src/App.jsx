@@ -1,10 +1,13 @@
 import { SiteMasthead } from "./components/SiteMasthead.jsx"
 import { siteConfig } from "./config/site.js"
+import { currentPath } from "./lib/path.js"
+import { LibraryPage } from "./pages/Library.jsx"
 import { SystemMapPage } from "./pages/SystemMap.jsx"
 
 export default function App() {
-  const path = window.location.pathname.replace(/\/+$/, "")
+  const path = currentPath()
   if (path === "/map") return <SystemMapPage />
+  if (path === "/library") return <LibraryPage />
   return <HomePage />
 }
 
@@ -34,6 +37,9 @@ function HomePage() {
             <br />
             A structured system for collecting, organizing, contextualizing,
             and retrieving visual references.
+          </p>
+          <p className="intro-link">
+            <a href="/library">Open the library</a>
           </p>
           <section className="actions" aria-label="Fundamental actions">
             <dl>

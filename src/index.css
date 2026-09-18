@@ -135,6 +135,33 @@ a {
   max-width: 100%;
 }
 
+.masthead-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.masthead-nav a {
+  text-decoration: none;
+}
+
+.masthead-nav a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.masthead-nav a.is-current {
+  color: var(--accent);
+}
+
+.intro-link {
+  margin-top: 1.25rem;
+}
+
+.intro-link a {
+  text-underline-offset: 0.2em;
+}
+
 .main {
   padding-block: clamp(8rem, 22svh, 18rem) 5rem;
 }

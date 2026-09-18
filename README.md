@@ -3,63 +3,48 @@
 Kept is a personal reference database: a structured system for collecting,
 organizing, contextualizing, and retrieving visual references.
 
-The product is being developed as a robust web application. It is not primarily
-a desktop or mobile app, and it is not just a canvas for temporarily arranging
-images. A canvas may be one useful way to work with references, but the durable
-product is the reference system underneath it.
+> A library you can actually operate.
 
-> Collect visual references once, structure and contextualize them, then
-> reliably find and use them again.
+The durable product is the reference system — not a moodboard, not a canvas,
+and not a generic file locker. The first operable slice is `/library`: a
+creator-focused library with Drive-like operability (sidebar, grid/list,
+search, bulk actions, details) over Kept objects (References, Assets,
+collections, tags, notes, relationships).
 
 ## Product model
 
-The central object is a reference record. A record can contain a visual asset or
-external reference, source information, metadata, personal notes, collections,
-and relationships to other references.
+The central object is a **Reference**, not a File. A reference can hold one or
+more **Assets** (stored files), source information, notes, collections, tags,
+and typed directional relationships to other references.
 
 The fundamental actions are:
 
 - **Capture** — Create a record.
 - **Index** — Give it structure through metadata, tags, and attributes.
 - **Annotate** — Add personal meaning and context.
-- **Organize** — Put references into collections and broader systems.
+- **Organize** — Collections and tags.
 - **Query** — Search and filter the database.
 - **Retrieve** — Actually find a reference again and understand why it matters.
 - **Connect** — Relate one reference to another.
 
-Collections and connections are distinct concepts. Collections are intentional
-groups assembled by the user; connections express relationships between
-individual references, such as similarity, influence, contrast, source lineage,
-or a personal association.
-
-## Product principles
-
-1. **Capture should be effortless.** Add structure progressively rather than
-   blocking intake.
-2. **Context is personal.** The user's interpretation is as valuable as source
-   metadata.
-3. **Structure should be layered.** Tags, fields, collections, and relationships
-   should complement rather than compete.
-4. **Retrieval is the measure of success.** Every feature should make future
-   discovery more reliable.
-5. **Relationships should be explicit.** References should form a network, not
-   only a set of folders.
-6. **Local ownership matters.** The product should prioritize user control,
-   speed, and dependable access to personal references.
-7. **The interface can be spatial without the product being canvas-first.** A
-   canvas, grid, list, detail view, graph, and search view should expose the
-   same underlying reference system.
+Index-later fields on a reference (`keywords`, `description`, `ocrText`,
+`embedding`) exist in the model and stay empty. There is no AI pipeline yet.
 
 ## Current state
 
-This repository currently contains the early product landing page and brand
-foundation. The reference database itself is the next major stage of
-development: a web-first application for capturing references, building
-structure and context around them, and retrieving them later.
+- `/` — product landing.
+- `/library` — collections index (stacked buckets) then operate chrome
+  inside a collection: sidebar, grid/list browser, search/filters,
+  multi-select bulk filing, inspector.
+- `/map` — system map (architecture diagram, not the running stack).
 
-The current landing page is intentionally minimal and communicates the early
-development status of the product. The working product name and public-facing
-language may continue to evolve as the system takes shape.
+Persistence is a single boundary: `src/data/repository.js`. Today it reads
+`src/data/fixtures.js` (a personal visual-reference library). UI code must not
+import fixtures directly. Swap the repository internals for local JSON or
+hosted storage later.
+
+Domain types live in `src/domain/types.js` (JSDoc). The app stays JavaScript
+on Vite + React 19.
 
 ## Run locally
 
@@ -68,34 +53,23 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. For a phone on the same network, run
-`npm run dev -- --host 0.0.0.0` and open the network URL printed by Vite.
+Open the URL Vite prints (default http://localhost:5173). Routes: `/`,
+`/library`, `/map`. For a phone on the same network, run
+`npm run dev -- --host 0.0.0.0`.
 
 ```sh
 npm run build
 npm run preview
 ```
 
-## Technical direction
-
-The application is a React + Vite web app. The primary product focus is a
-robust browser experience rather than separate desktop and mobile applications.
-The web app should support a dependable, responsive workflow across screen
-sizes without treating mobile as a separate product surface.
-
-Local-first behavior remains an important direction: references and their
-context should feel fast, owned by the user, and available without unnecessary
-dependence on a remote service. The implementation details for persistence,
-sync, and search will be established as the application develops.
-
 ## Edit the current UI
 
 - `src/config/site.js`: name, description, status, accent, and home link.
-- `src/components/SiteMasthead.jsx`: reusable header.
-- `src/App.jsx`: page shell, product summary, status pill, and project context.
+- `src/components/SiteMasthead.jsx`: header + landing / library / map nav.
+- `src/pages/Library.jsx`: operate surface.
+- `src/data/repository.js`: persistence boundary.
+- `src/domain/types.js`: Reference, Asset, Collection, Tag, Note, Relationship, User.
+- `src/App.jsx`: landing copy and pathname routing.
 - `src/index.css`: site styles, including the 672px mobile breakpoint.
-- `vite.config.js`: generates page title and description from site configuration.
 
 Vercel continues to use the existing Vite configuration and `dist` output.
-The existing assets in `public/` are retained while the web application and
-brand direction continue to develop.
