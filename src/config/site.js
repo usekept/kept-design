@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "KEPT",
-  description: "Visual thinking, developed.",
+  description: "A personal reference database.",
   status: "",
   accent: "#FA586A",
   href: "/",

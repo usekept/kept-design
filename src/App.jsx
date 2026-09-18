@@ -8,28 +8,63 @@ export default function App() {
   return <HomePage />
 }
 
+const fundamentalActions = [
+  ["Capture", "Create a record."],
+  ["Index", "Give it structure."],
+  ["Annotate", "Add meaning."],
+  ["Organize", "Put it into collections / relationships."],
+  ["Query", "Search and filter it."],
+  ["Retrieve", "Actually fucking find it again."],
+  ["Connect", "Relate one reference to another."],
+]
+
 function HomePage() {
   return (
     <div className="page">
       <SiteMasthead
         name={siteConfig.name}
-        description={siteConfig.description}
         meta={siteConfig.status}
         href={siteConfig.href}
+        badge="EARLY DEVELOPMENT"
       />
       <main className="main">
         <div className="intro">
-          <span className="status-pill">EARLY DEVELOPMENT</span>
           <p>
-            Local-first visual reference database — capture references once,
-            give them structure and context, and reliably find them again.
+            <strong>{siteConfig.description}</strong>
+            <br />
+            A structured system for collecting, organizing, contextualizing,
+            and retrieving visual references.
           </p>
-          <pre className="project-context">{`DF.4.2    VISUAL WORKING SURFACE
-
-RG.001    REFERENCE SYSTEM
-
-STATUS    ACTIVE
-STUDIO    `}<a className="owner-link" href="https://onwend.com/">ONWEND</a></pre>
+          <section className="actions" aria-label="Fundamental actions">
+            <dl>
+              {fundamentalActions.map(([action, meaning]) => (
+                <div key={action}>
+                  <dt>{action}</dt>
+                  <dd>{meaning}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+          <dl className="project-context">
+            <div>
+              <dt>DF.4.2</dt>
+              <dd>VISUAL WORKING SURFACE</dd>
+            </div>
+            <div>
+              <dt>RG.001</dt>
+              <dd>REFERENCE SYSTEM</dd>
+            </div>
+            <div className="project-context-group">
+              <div>
+                <dt>STATUS</dt>
+                <dd className="status-active">ACTIVE</dd>
+              </div>
+              <div>
+                <dt>STUDIO</dt>
+                <dd><a className="owner-link" href="https://onwend.com/">ONWEND</a></dd>
+              </div>
+            </div>
+          </dl>
         </div>
       </main>
     </div>

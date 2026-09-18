@@ -1,8 +1,35 @@
+@font-face {
+  font-family: "Gen Interface JP Display";
+  src: url("./fonts/GenInterfaceJPDisplay-Regular.subset.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gen Interface JP Display";
+  src: url("./fonts/GenInterfaceJPDisplay-SemiBold.subset.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gen Interface JP Display";
+  src: url("./fonts/GenInterfaceJPDisplay-Bold.subset.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
   --paper: #ffffff;
   --accent-light: color-mix(in srgb, var(--accent) 10%, var(--paper));
-  --font-interface: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Consolas, monospace;
+  /* Latin subset of Gen Interface JP Display (SIL OFL 1.1), self-hosted from src/fonts. */
+  --font-interface: "Gen Interface JP Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Consolas, monospace;
+  --label-column: 10ch;
   --page-width: 71.5rem;
   --page-gutter: clamp(1.25rem, 4vw, 4rem);
   /* --accent is supplied by src/config/site.js through the entry point. */
@@ -81,6 +108,12 @@ a {
   overflow-wrap: anywhere;
 }
 
+.masthead-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
 .masthead-name {
   font-weight: 600;
 }
@@ -114,11 +147,11 @@ a {
 
 .status-pill {
   display: inline-block;
-  margin: 0 0 0.75rem;
   padding: 0.1875rem 0.5625rem;
   border-radius: 999px;
-  background: #F7EAF7;
-  color: #753D75;
+  background: #FCD6FC;
+  color: #A41AA4;
+  font-family: var(--font-mono);
   font-size: 0.5625rem;
   line-height: 1.5;
 }
@@ -128,16 +161,44 @@ a {
   font-size: 0.75rem;
 }
 
-.project-context {
-  margin: 2rem 0 0;
-  font-family: inherit;
+.actions {
+  margin-top: 2rem;
   font-size: 0.75rem;
-  font-weight: 400;
+}
+
+.actions dl {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.actions dl > div,
+.project-context > div:not(.project-context-group),
+.project-context-group > div {
+  display: grid;
+  grid-template-columns: var(--label-column) 1fr;
+}
+
+.actions dd,
+.project-context dd {
+  margin: 0;
+}
+
+.project-context {
+  display: grid;
+  row-gap: 1.6em; /* one blank line between groups */
+  margin: 2rem 0 0;
+  font-size: 0.75rem;
   line-height: 1.6;
-  white-space: pre-wrap;
+}
+
+.status-active {
+  color: #34C759; /* Apple system green, as on iOS toggles */
+  font-family: var(--font-mono);
 }
 
 .owner-link {
+  font-family: var(--font-mono);
   outline: 1px dotted #dddddd;
   outline-offset: 3px;
   text-decoration: none;
@@ -161,7 +222,7 @@ a {
     display: block;
   }
 
-  .site-masthead .masthead-name {
+  .site-masthead .masthead-name-row {
     margin-bottom: 0.25rem;
   }
 
