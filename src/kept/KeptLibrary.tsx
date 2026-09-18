@@ -4,9 +4,16 @@ import { Dialog } from '@base-ui/react/dialog';
 import { Field } from '@base-ui/react/field';
 import { Form } from '@base-ui/react/form';
 import { Input } from '@base-ui/react/input';
-import { ArrowIcon, SearchIcon, Separator, plural } from './parts.tsx';
 import { href } from './href.ts';
-import { createCollection, listCollections, type Collection } from './repository.ts';
+import { ArrowIcon, ImageFill, SearchIcon, Separator, plural } from './parts.tsx';
+import {
+  createCollection,
+  listAllReferences,
+  listCollections,
+  type Collection,
+  type Reference,
+} from './repository.ts';
+import { ReferenceBrowser } from './ReferenceBrowser.tsx';
 
 // /library: collections index, the app home. Tiles follow the base-ui.com "Made for the makers" grid;
 // each tile's 2×2 mosaic stands in for the collection's first images.
@@ -14,11 +21,14 @@ export function KeptLibrary() {
   const [collections, setCollections] = React.useState<Collection[] | null>(null);
   const [query, setQuery] = React.useState('');
   const [createdId, setCreatedId] = React.useState<string | null>(null);
+  const [allReferences, setAllReferences] = React.useState<Reference[]>([]);
 
   React.useEffect(() => {
     let ignore = false;
-    listCollections().then((list) => {
-      if (!ignore) setCollections(list);
+    Promise.all([listCollections(), listAllReferences()]).then(([list, refs]) => {
+      if (ignore) return;
+      setCollections(list);
+      setAllReferences(refs);
     });
     return () => {
       ignore = true;
@@ -32,6 +42,11 @@ export function KeptLibrary() {
   }, [collections, query]);
 
   const total = collections?.reduce((sum, c) => sum + c.referenceCount, 0) ?? 0;
+  // In All references, each item's second line is the collection it belongs to.
+  const collectionNames = React.useMemo(
+    () => new Map((collections ?? []).map((c) => [c.id, c.name])),
+    [collections],
+  );
 
   return (
     <>
@@ -87,7 +102,7 @@ export function KeptLibrary() {
             {visible.map((c) => (
               <li key={c.id} className="KeptFigureItem" data-new={c.id === createdId || undefined}>
                 <a className="KeptFigureLink" href={href.collection(c.id)}>
-                  <Mosaic count={c.referenceCount} />
+                  <Mosaic count={c.referenceCount} covers={c.covers ?? []} />
                   <span className="KeptStack KeptStack-0">
                     <span className="KeptText1 KeptFigureName">{c.name}</span>
                     <span className="KeptText1 KeptMuted">{plural(c.referenceCount, 'reference')}</span>
@@ -98,6 +113,15 @@ export function KeptLibrary() {
           </ul>
         </div>
       </section>
+
+      <Separator />
+      <ReferenceBrowser
+        id="kept-all-references"
+        heading="All references"
+        references={allReferences}
+        meta={(r) => collectionNames.get(r.collectionId) ?? ''}
+        emptyText="Nothing kept yet."
+      />
     </>
   );
 }
@@ -166,12 +190,14 @@ function NewCollectionDialog({ onCreated }: { onCreated: (collection: Collection
   );
 }
 
-// Placeholder images: light gray squares, one per reference, up to four.
-function Mosaic({ count }: { count: number }) {
+// The first four images; light gray squares stand in when there are none.
+function Mosaic({ count, covers }: { count: number; covers: string[] }) {
   return (
     <span className="KeptMosaic" aria-hidden>
       {[0, 1, 2, 3].map((i) => (
-        <span key={i} className="KeptMosaicCell" data-empty={i >= count || undefined} />
+        <span key={i} className="KeptMosaicCell" data-empty={i >= count || undefined}>
+          <ImageFill src={covers[i]} />
+        </span>
       ))}
     </span>
   );

@@ -6,8 +6,8 @@ organizing, contextualizing, and retrieving visual references.
 > A library you can actually operate.
 
 The durable product is the reference system — not a moodboard, not a canvas,
-and not a generic file locker. Operate UI is a snapshot of
-[w-ade/kept-ui](https://github.com/w-ade/kept-ui) at `d250e558` (`src/kept/`),
+and not a generic file locker. Product UI is a snapshot of
+[w-ade/kept-ui](https://github.com/w-ade/kept-ui) at `d79b703` (`src/kept/`),
 wired to real SPA paths. The lab Base UI docs playground (`src/demos/`) is
 not in this repo.
 
@@ -29,21 +29,20 @@ The fundamental actions are:
 
 ## Current state
 
-- `/` — product landing (kept.design chrome, not the lab landing).
+- `/` — kept-ui landing.
 - `/login` — mock username + password.
 - `/login/mfa` — TOTP stand-in (continue without a code).
 - `/library` — collections index (app home). Signed in.
-- `/library/:collectionId` — operate a collection. Inspector is the same
-  route with `?r=` for the selected reference.
-- `/m/:token` — unlisted read-only moodboard. No chrome, no login.
-- `/map` — system map (architecture diagram, not the running stack).
+- `/library/:collectionId` — operate a collection.
+- `/library/:collectionId/:referenceId` — one reference.
+- `/m/:token` — unlisted read-only board. No chrome, no login.
+- `/map` — kept-ui system map.
 
 Persistence is the mock in `src/kept/repository.ts`. Session is mocked in
 `src/kept/session.ts` (lab account `wade` / `1234`). Swap those for Supabase
 later; do not block the UI on it.
 
-Stack: Vite + React 19 + `@base-ui/react` + Geist on the operate screens.
-Landing and `/map` keep the existing product typeface.
+Stack: Vite + React 19 + `@base-ui/react` + Geist.
 
 ## Run locally
 

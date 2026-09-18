@@ -1,10 +1,9 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
+import "@fontsource-variable/geist"
+import "@fontsource-variable/geist-mono"
 import App from "./App.jsx"
-import { siteConfig } from "./config/site.js"
-import "./index.css"
-
-document.documentElement.style.setProperty("--accent", siteConfig.accent)
+import "./kept/tokens.css"
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

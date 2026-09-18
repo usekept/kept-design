@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { Button } from '@base-ui/react/button';
-import '@fontsource-variable/geist';
-import '@fontsource-variable/geist-mono';
 import { KeptBoard } from './KeptBoard.tsx';
 import { KeptCollection } from './KeptCollection.tsx';
+import { KeptLanding } from './KeptLanding.tsx';
 import { KeptLibrary } from './KeptLibrary.tsx';
 import { KeptLogin } from './KeptLogin.tsx';
+import { KeptMap } from './KeptMap.tsx';
 import { KeptReference } from './KeptReference.tsx';
 import { go, href, parseKeptRoute, type KeptRoute } from './href.ts';
 import { ArrowIcon, ArrowLink, Separator } from './parts.tsx';
@@ -13,16 +13,18 @@ import { completeMfaForLab, getSession, signOut } from './session.ts';
 import './tokens.css';
 import './kept.css';
 
-// Snapshot of w-ade/kept-ui@d250e558 operate UI, wired to product SPA paths.
+// Snapshot of w-ade/kept-ui@d79b703 product UI, wired to real SPA paths.
 // Shells follow the lab: marketing/auth/app chrome plus a chrome-less board.
 
-type Shell = 'auth' | 'app' | 'board';
+type Shell = 'marketing' | 'auth' | 'app' | 'board';
 
-const AUTH_NAV = [{ href: href.home, label: 'Landing', route: 'home' }];
-const APP_NAV = [
+const MARKETING_NAV = [
+  { href: href.home, label: 'Landing', route: 'home' },
   { href: href.library, label: 'Library', route: 'library' },
   { href: href.map, label: 'Map', route: 'map' },
 ];
+const AUTH_NAV = MARKETING_NAV.slice(0, 1);
+const APP_NAV = MARKETING_NAV.slice(1);
 
 function shellFor(route: KeptRoute): Shell {
   switch (route.kind) {
@@ -34,8 +36,11 @@ function shellFor(route: KeptRoute): Shell {
       return 'auth';
     case 'library':
     case 'collection':
-    case 'unknown':
       return 'app';
+    case 'home':
+    case 'map':
+    case 'unknown':
+      return 'marketing';
     default: {
       const _exhaustive: never = route;
       return _exhaustive;
@@ -45,6 +50,8 @@ function shellFor(route: KeptRoute): Shell {
 
 function titleFor(route: KeptRoute) {
   switch (route.kind) {
+    case 'home':
+      return 'KEPT — A library you can actually operate.';
     case 'login':
       return 'Sign in · KEPT';
     case 'mfa':
@@ -53,11 +60,35 @@ function titleFor(route: KeptRoute) {
       return 'Request an invite · KEPT';
     case 'library':
       return 'Library · KEPT';
+    case 'map':
+      return 'System map · KEPT';
     case 'collection':
     case 'board':
       return null;
     case 'unknown':
       return 'KEPT';
+    default: {
+      const _exhaustive: never = route;
+      return _exhaustive;
+    }
+  }
+}
+
+function navCurrent(route: KeptRoute): string | null {
+  switch (route.kind) {
+    case 'home':
+      return 'home';
+    case 'library':
+    case 'collection':
+      return 'library';
+    case 'map':
+      return 'map';
+    case 'login':
+    case 'mfa':
+    case 'request':
+    case 'board':
+    case 'unknown':
+      return null;
     default: {
       const _exhaustive: never = route;
       return _exhaustive;
@@ -79,20 +110,9 @@ function useAuthGate(route: KeptRoute) {
   return redirect !== null;
 }
 
-function canonicalizeCollectionUrl(route: KeptRoute) {
-  if (route.kind !== 'collection' || !route.referenceId) return;
-  const canonical = href.reference(route.collectionId, route.referenceId);
-  const current = `${window.location.pathname}${window.location.search}`;
-  if (current !== canonical) window.history.replaceState(null, '', canonical);
-}
-
 export function KeptApp() {
   const route = parseKeptRoute();
   const redirecting = useAuthGate(route);
-
-  React.useEffect(() => {
-    canonicalizeCollectionUrl(route);
-  }, [route]);
 
   React.useEffect(() => {
     const previous = document.title;
@@ -111,13 +131,15 @@ export function KeptApp() {
     return <KeptBoard key={token} token={token} />;
   }
 
-  const nav = shell === 'app' ? APP_NAV : AUTH_NAV;
+  const nav = shell === 'app' ? APP_NAV : shell === 'auth' ? AUTH_NAV : MARKETING_NAV;
   const session = getSession();
-  const currentNav =
-    route.kind === 'library' || route.kind === 'collection' ? 'library' : null;
+  const currentNav = navCurrent(route);
 
   let content: React.ReactNode;
   switch (route.kind) {
+    case 'home':
+      content = <KeptLanding />;
+      break;
     case 'login':
       content = <KeptLogin />;
       break;
@@ -126,6 +148,9 @@ export function KeptApp() {
       break;
     case 'library':
       content = <KeptLibrary />;
+      break;
+    case 'map':
+      content = <KeptMap />;
       break;
     case 'collection':
       content = route.referenceId ? (

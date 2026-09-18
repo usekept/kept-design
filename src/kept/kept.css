@@ -1129,3 +1129,82 @@
     word-break: break-all;
   }
 }
+
+/* ─── Real images ─── */
+@layer components {
+  /* The file fills its box; the gray behind it shows while it loads */
+  .KeptImageFill {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .KeptMosaicCell {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .KeptImage {
+    overflow: hidden;
+  }
+
+  /* Pins and badges sit above the image */
+  .KeptPin,
+  .KeptImagePinCount {
+    z-index: 1;
+  }
+
+  /* Full image in its real shape, as large as the column allows but never taller than the screen */
+  .KeptImageLarge {
+    width: min(100%, calc(80dvh * var(--kept-aspect, 1)));
+    overflow: visible;
+  }
+
+  .KeptLightboxSquare {
+    width: min(100%, calc(70dvh * var(--kept-aspect, 1)));
+  }
+}
+
+@layer components {
+  /* Written text keeps its line breaks */
+  .KeptPreLine {
+    white-space: pre-line;
+  }
+}
+
+/* ─── System map ─── */
+@layer components {
+  /* Term | detail rows where the detail needs more room than the term */
+  .KeptListWide .KeptListItem {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 1.5rem;
+
+    @media (min-width: 48rem) {
+      gap: 3rem;
+    }
+  }
+
+  /* Flow rows step in by depth, like the tree in the v0 plan */
+  .KeptFlowRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding-inline-start: calc(var(--kept-depth, 0) * 1rem);
+
+    @media (min-width: 48rem) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 3rem;
+      align-items: baseline;
+      /* Only the step indents; descriptions stay in one column */
+      padding-inline-start: 0;
+
+      > :first-child {
+        padding-inline-start: calc(var(--kept-depth, 0) * 1.5rem);
+      }
+    }
+  }
+}

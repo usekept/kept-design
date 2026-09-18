@@ -2,7 +2,15 @@ import * as React from 'react';
 import { Button } from '@base-ui/react/button';
 import { Dialog } from '@base-ui/react/dialog';
 import { href } from './href.ts';
-import { ArrowIcon, formatDate, plural, sourceLabel, useDocumentTitle } from './parts.tsx';
+import {
+  ArrowIcon,
+  ImageFill,
+  formatDate,
+  fullImageStyle,
+  plural,
+  sourceLabel,
+  useDocumentTitle,
+} from './parts.tsx';
 import { getBoard, type Board, type Reference } from './repository.ts';
 
 // /m/:token: an unlisted, read-only moodboard. Board shell: no nav, no sign-in.
@@ -55,6 +63,9 @@ export function KeptBoard({ token }: { token: string }) {
               {formatDate(share.publishedAt)}
             </p>
           </div>
+          {collection.description.trim() && (
+            <p className="KeptText2 KeptCol-body KeptPreLine">{collection.description}</p>
+          )}
         </header>
 
         <main className="KeptContents">
@@ -65,7 +76,9 @@ export function KeptBoard({ token }: { token: string }) {
               {references.map((r, i) => (
                 <li key={r.id}>
                   <button type="button" className="KeptBoardItem" onClick={() => setOpenIndex(i)}>
-                    <span className="KeptImage" aria-hidden />
+                    <span className="KeptImage" aria-hidden>
+                      <ImageFill src={r.thumbUrl} />
+                    </span>
                     <span className="KeptText1 KeptFigureName">{r.title}</span>
                   </button>
                 </li>
@@ -149,7 +162,12 @@ function Lightbox({
               </div>
 
               <div className="KeptLightboxImage">
-                <span className="KeptImage KeptLightboxSquare" aria-hidden>
+                <span
+                  className="KeptImage KeptLightboxSquare"
+                  style={fullImageStyle(reference)}
+                  aria-hidden
+                >
+                  <ImageFill src={reference.imageUrl} eager />
                   {reference.pins.map((pin, i) => (
                     <span
                       key={pin.id}
@@ -167,7 +185,7 @@ function Lightbox({
                 <Dialog.Description className="KeptText1 KeptMuted">
                   {sourceLabel(reference.captureUrl)}
                 </Dialog.Description>
-                {reference.notes && <p className="KeptText1">{reference.notes}</p>}
+                {reference.notes && <p className="KeptText1 KeptPreLine">{reference.notes}</p>}
                 {reference.pins.length > 0 && (
                   <ol className="KeptList KeptLightboxPins">
                     {reference.pins.map((pin, i) => (
