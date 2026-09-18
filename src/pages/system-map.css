@@ -1,0 +1,209 @@
+.map-page {
+  --map-font: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --map-width: 90.625rem;
+}
+
+.map-page .site-masthead,
+.map-main {
+  width: min(var(--map-width), 100% - 2 * var(--page-gutter));
+  margin-inline: auto;
+}
+
+.map-main {
+  padding-block: 4rem 5rem;
+}
+
+.map-header {
+  margin-bottom: 2rem;
+  color: #1f2937;
+  font-family: var(--map-font);
+}
+
+.map-header h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.map-header p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.map-hint {
+  margin: 0 0 0.75rem;
+  color: #6b7280;
+  font-size: 0.6875rem;
+}
+
+.map-viewport {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-stage {
+  position: relative;
+  overflow: hidden;
+  transform-origin: 0 0;
+  font-family: var(--map-font);
+  color: #111827;
+}
+
+.map-canvas {
+  position: absolute;
+  inset: 0 auto auto 0;
+}
+
+.map-group,
+.map-node,
+.map-edge-label {
+  position: absolute;
+}
+
+.map-group {
+  border: 1.5px solid;
+  border-radius: 3px;
+}
+
+.map-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  margin: 0;
+  padding: 0.6875rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.map-edges {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.map-node {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0 0.75rem 0 1.25rem;
+  border: 1.5px solid;
+  border-radius: 6px;
+  box-shadow: 0 1.5px 0 var(--shadow, transparent);
+  line-height: 1.25;
+}
+
+.map-node-icon {
+  display: flex;
+  flex: none;
+  color: #1f2937;
+}
+
+.map-node-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1875rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.map-node-text strong {
+  font-size: 0.78125rem;
+  font-weight: 600;
+}
+
+.map-node-text.is-emphasis strong {
+  font-size: 0.875rem;
+}
+
+.map-node-inline {
+  font-size: 0.6875rem;
+  line-height: 1.35;
+}
+
+.map-node-inline b {
+  font-weight: 600;
+}
+
+.map-node-sub {
+  font-size: 0.65625rem;
+  line-height: 1.35;
+}
+
+.map-node--list {
+  display: block;
+  padding: 1.5rem 1.125rem;
+}
+
+.map-node--list strong {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.map-node--list ul {
+  margin: 0.3125rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.65625rem;
+  line-height: 1.45;
+}
+
+.map-node--list li::before {
+  content: "•";
+  margin-right: 0.375rem;
+}
+
+.map-node--cylinder {
+  padding: 0;
+  border: 0;
+}
+
+.map-node--cylinder > svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.map-node-body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  height: 100%;
+  padding: 1.75rem 1rem 0 1.25rem;
+}
+
+.map-edge-label {
+  z-index: 1;
+  padding: 0 2px;
+  font-size: 0.71875rem;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.map-edge-label--center {
+  transform: translate(-50%, -50%);
+}
+
+.map-edge-label--left {
+  transform: translateY(-50%);
+}
+
+@media (max-width: 42rem) {
+  .map-main {
+    padding-block: 3rem 4rem;
+  }
+
+  .map-header h2 {
+    font-size: 1.375rem;
+  }
+}

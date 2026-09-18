@@ -1,7 +1,14 @@
 import { SiteMasthead } from "./components/SiteMasthead.jsx"
 import { siteConfig } from "./config/site.js"
+import { SystemMapPage } from "./pages/SystemMap.jsx"
 
 export default function App() {
+  const path = window.location.pathname.replace(/\/+$/, "")
+  if (path === "/map") return <SystemMapPage />
+  return <HomePage />
+}
+
+function HomePage() {
   return (
     <div className="page">
       <SiteMasthead
@@ -14,8 +21,8 @@ export default function App() {
         <div className="intro">
           <span className="status-pill">EARLY DEVELOPMENT</span>
           <p>
-            Local-first visual reference canvas — paste images, arrange them,
-            annotate lightly, and keep working without the weight of a full design tool.
+            Local-first visual reference database — capture references once,
+            give them structure and context, and reliably find them again.
           </p>
           <pre className="project-context">{`DF.4.2    VISUAL WORKING SURFACE
 
