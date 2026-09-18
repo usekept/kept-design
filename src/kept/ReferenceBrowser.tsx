@@ -3,7 +3,6 @@ import { Field } from '@base-ui/react/field';
 import { Input } from '@base-ui/react/input';
 import { Toggle } from '@base-ui/react/toggle';
 import { ToggleGroup } from '@base-ui/react/toggle-group';
-import { href } from './href.ts';
 import { ImageFill, SearchIcon, sourceLabel } from './parts.tsx';
 import type { Reference } from './repository.ts';
 
@@ -29,6 +28,7 @@ export function ReferenceBrowser({
   references,
   meta = sourceMeta,
   emptyText = 'Nothing kept here yet.',
+  actions,
 }: {
   id: string;
   heading: string;
@@ -36,6 +36,8 @@ export function ReferenceBrowser({
   // Second line under each item: the source site by default
   meta?: (r: Reference) => string;
   emptyText?: string;
+  // Extra controls under the heading, e.g. Add images
+  actions?: React.ReactNode;
 }) {
   const [query, setQuery] = React.useState('');
   const [view, setView] = React.useState<View>(readView);
@@ -60,7 +62,7 @@ export function ReferenceBrowser({
     }
   };
 
-  const hrefFor = (r: Reference) => href.reference(r.collectionId, r.id);
+  const hrefFor = (r: Reference) => `/library/${r.collectionId}/${r.id}`;
 
   return (
     <section className="KeptContents" aria-labelledby={id}>
@@ -83,6 +85,7 @@ export function ReferenceBrowser({
             List
           </Toggle>
         </ToggleGroup>
+        {actions}
       </div>
 
       <div className="KeptCol-wide KeptStack KeptStack-6">

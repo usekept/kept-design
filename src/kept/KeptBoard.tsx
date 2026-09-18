@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Button } from '@base-ui/react/button';
 import { Dialog } from '@base-ui/react/dialog';
-import { href } from './href.ts';
 import {
   ArrowIcon,
   ImageFill,
@@ -104,7 +103,7 @@ function BoardFooter() {
     <footer className="KeptContents">
       <p className="KeptText1 KeptMuted KeptCol-full KeptBoardFooter">
         Made with{' '}
-        <a className="KeptLink" href={href.home}>
+        <a className="KeptLink" href="/">
           KEPT
         </a>
         , a library you can actually operate.

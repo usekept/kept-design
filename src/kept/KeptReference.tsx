@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Button } from '@base-ui/react/button';
 import { Field } from '@base-ui/react/field';
 import { Input } from '@base-ui/react/input';
-import { go, href } from './href.ts';
 import {
   ArrowIcon,
   BackLink,
@@ -51,10 +50,10 @@ export function KeptReference({
 
   const index = references && reference ? references.findIndex((r) => r.id === reference.id) : -1;
   const hrefFor = (r: Reference | undefined) =>
-    r ? href.reference(collectionId, r.id) : undefined;
+    r ? `/library/${collectionId}/${r.id}` : undefined;
   const prevHref = references ? hrefFor(references[index - 1]) : undefined;
   const nextHref = references ? hrefFor(references[index + 1]) : undefined;
-  const collectionHref = href.collection(collectionId);
+  const collectionHref = `/library/${collectionId}`;
 
   // ← / → step through the collection, Escape goes back to it (never while typing).
   React.useEffect(() => {
@@ -72,7 +71,7 @@ export function KeptReference({
               : undefined;
       if (href) {
         event.preventDefault();
-        go(href);
+        window.location.assign(href);
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -84,7 +83,7 @@ export function KeptReference({
     return (
       <section className="KeptContents">
         <div className="KeptCol-hero KeptHeading">
-          <BackLink href={collection ? collectionHref : href.library}>
+          <BackLink href={collection ? collectionHref : '/library'}>
             {collection?.name ?? 'Library'}
           </BackLink>
           <h1 className="KeptDisplay">Reference not found</h1>
@@ -103,7 +102,7 @@ export function KeptReference({
       <section className="KeptContents">
         <div className="KeptCol-hero KeptHeading">
           <nav className="KeptCrumbs" aria-label="Breadcrumb">
-            <a className="KeptLink KeptText1" href={href.library}>
+            <a className="KeptLink KeptText1" href="/library">
               Library
             </a>
             <span className="KeptText1 KeptMuted" aria-hidden>

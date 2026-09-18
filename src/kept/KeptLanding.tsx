@@ -1,4 +1,3 @@
-import { href } from './href.ts';
 import { ArrowLink, Separator } from './parts.tsx';
 
 const ACTIONS = [
@@ -23,7 +22,7 @@ export function KeptLanding() {
       <section className="KeptContents">
         <h1 className="KeptDisplay KeptCol-hero">A library you can actually operate.</h1>
         <div className="KeptCol-full">
-          <ArrowLink href={href.library}>Open the library</ArrowLink>
+          <ArrowLink href="/library">Open the library</ArrowLink>
         </div>
       </section>
 
@@ -47,13 +46,13 @@ export function KeptLanding() {
             <li className="KeptListItem">
               <span className="KeptText2">Members</span>
               <span className="KeptText2">
-                <ArrowLink href={href.login}>Sign in</ArrowLink>
+                <ArrowLink href="/login">Sign in</ArrowLink>
               </span>
             </li>
             <li className="KeptListItem">
               <span className="KeptText2">Everyone else</span>
               <span className="KeptText2">
-                <ArrowLink href={href.request}>Request an invite</ArrowLink>
+                <ArrowLink href="/request">Request an invite</ArrowLink>
               </span>
             </li>
           </ul>

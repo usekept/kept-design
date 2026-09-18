@@ -4,7 +4,6 @@ import { Dialog } from '@base-ui/react/dialog';
 import { Field } from '@base-ui/react/field';
 import { Form } from '@base-ui/react/form';
 import { Input } from '@base-ui/react/input';
-import { href } from './href.ts';
 import { ArrowIcon, ImageFill, SearchIcon, Separator, plural } from './parts.tsx';
 import {
   createCollection,
@@ -101,7 +100,7 @@ export function KeptLibrary() {
           <ul className="KeptFigureGrid" aria-label="Collections">
             {visible.map((c) => (
               <li key={c.id} className="KeptFigureItem" data-new={c.id === createdId || undefined}>
-                <a className="KeptFigureLink" href={href.collection(c.id)}>
+                <a className="KeptFigureLink" href={`/library/${c.id}`}>
                   <Mosaic count={c.referenceCount} covers={c.covers ?? []} />
                   <span className="KeptStack KeptStack-0">
                     <span className="KeptText1 KeptFigureName">{c.name}</span>

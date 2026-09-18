@@ -1,4 +1,4 @@
-// Product paths for the Kept UI. Lab used `#/kept/...`; these are real SPA routes.
+// Product paths for the Kept UI. Lab used `#/kept/...`; these are real SPA paths.
 
 export const href = {
   home: '/',
@@ -7,54 +7,18 @@ export const href = {
   request: '/request',
   library: '/library',
   map: '/map',
+  ios: '/ios',
+  todo: '/todo',
+  settings: '/settings',
+  referral: '/referral',
   collection: (collectionId: string) => `/library/${encodeURIComponent(collectionId)}`,
   reference: (collectionId: string, referenceId: string) =>
     `/library/${encodeURIComponent(collectionId)}/${encodeURIComponent(referenceId)}`,
   board: (token: string) => `/m/${encodeURIComponent(token)}`,
 } as const;
 
-export function boardAbsoluteUrl(token: string) {
-  return `${window.location.origin}${href.board(token)}`;
-}
-
-export function go(path: string, mode: 'assign' | 'replace' = 'assign') {
-  if (mode === 'replace') window.location.replace(path);
-  else window.location.assign(path);
-}
-
-export type KeptRoute =
-  | { kind: 'home' }
-  | { kind: 'login' }
-  | { kind: 'mfa' }
-  | { kind: 'request' }
-  | { kind: 'library' }
-  | { kind: 'collection'; collectionId: string; referenceId: string | null }
-  | { kind: 'board'; token: string }
-  | { kind: 'map' }
-  | { kind: 'unknown' };
-
-export function parseKeptRoute(pathname = window.location.pathname, search = window.location.search): KeptRoute {
+/** Hash rest (`#/kept/library/…`) → pathname rest (`library/…`). */
+export function pathToKeptRoute(pathname = window.location.pathname): string {
   const path = pathname.replace(/\/+$/, '') || '/';
-  const parts = path.split('/').filter(Boolean);
-  const referenceParam = new URLSearchParams(search).get('r');
-
-  if (path === '/') return { kind: 'home' };
-  if (path === '/login') return { kind: 'login' };
-  if (path === '/login/mfa') return { kind: 'mfa' };
-  if (path === '/request') return { kind: 'request' };
-  if (path === '/library') return { kind: 'library' };
-  if (path === '/map') return { kind: 'map' };
-  if (parts[0] === 'library' && parts[1]) {
-    const collectionId = decodeURIComponent(parts[1]);
-    const nestedId = parts[2] ? decodeURIComponent(parts.slice(2).join('/')) : null;
-    return {
-      kind: 'collection',
-      collectionId,
-      referenceId: nestedId ?? referenceParam,
-    };
-  }
-  if (parts[0] === 'm' && parts[1]) {
-    return { kind: 'board', token: decodeURIComponent(parts.slice(1).join('/')) };
-  }
-  return { kind: 'unknown' };
+  return path === '/' ? '' : path.replace(/^\//, '');
 }

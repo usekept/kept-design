@@ -7,7 +7,7 @@ organizing, contextualizing, and retrieving visual references.
 
 The durable product is the reference system — not a moodboard, not a canvas,
 and not a generic file locker. Product UI is a snapshot of
-[w-ade/kept-ui](https://github.com/w-ade/kept-ui) at `d79b703` (`src/kept/`),
+[w-ade/kept-ui](https://github.com/w-ade/kept-ui) at `cb6dd28` (`src/kept/`),
 wired to real SPA paths. The lab Base UI docs playground (`src/demos/`) is
 not in this repo.
 
@@ -32,11 +32,14 @@ The fundamental actions are:
 - `/` — kept-ui landing.
 - `/login` — mock username + password.
 - `/login/mfa` — TOTP stand-in (continue without a code).
+- `/request` — request an invite.
 - `/library` — collections index (app home). Signed in.
-- `/library/:collectionId` — operate a collection.
-- `/library/:collectionId/:referenceId` — one reference.
+- `/library/:id` — operate a collection.
+- `/library/:id/:referenceId` — one reference.
 - `/m/:token` — unlisted read-only board. No chrome, no login.
 - `/map` — kept-ui system map.
+- `/todo`, `/settings`, `/referral` — account menu pages.
+- `/ios` — Kept on iOS, linked from the map.
 
 Persistence is the mock in `src/kept/repository.ts`. Session is mocked in
 `src/kept/session.ts` (lab account `wade` / `1234`). Swap those for Supabase

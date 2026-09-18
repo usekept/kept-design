@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Field } from '@base-ui/react/field';
-import { href } from './href.ts';
 import {
   BackLink,
   Separator,
@@ -17,6 +16,7 @@ import {
 } from './repository.ts';
 import { ShareDialog } from './KeptShare.tsx';
 import { ReferenceBrowser } from './ReferenceBrowser.tsx';
+import { UploadDialog } from './KeptUpload.tsx';
 
 // /library/:collectionId: the references in one collection, as a grid or a ruled list.
 export function KeptCollection({ collectionId }: { collectionId: string }) {
@@ -42,7 +42,7 @@ export function KeptCollection({ collectionId }: { collectionId: string }) {
     return (
       <section className="KeptContents">
         <div className="KeptCol-hero KeptHeading">
-          <BackLink href={href.library}>Library</BackLink>
+          <BackLink href="/library">Library</BackLink>
           <h1 className="KeptDisplay">Collection not found</h1>
         </div>
       </section>
@@ -53,7 +53,7 @@ export function KeptCollection({ collectionId }: { collectionId: string }) {
     <>
       <section className="KeptContents">
         <div className="KeptCol-hero KeptHeading">
-          <BackLink href={href.library}>Library</BackLink>
+          <BackLink href="/library">Library</BackLink>
           <h1 className="KeptDisplay">{collection.name}</h1>
         </div>
       </section>
@@ -89,7 +89,26 @@ export function KeptCollection({ collectionId }: { collectionId: string }) {
       </section>
 
       <Separator />
-      <ReferenceBrowser id="kept-references" heading="References" references={references} />
+      <ReferenceBrowser
+        id="kept-references"
+        heading="References"
+        references={references}
+        emptyText="Nothing kept here yet. Add images to start."
+        actions={
+          <UploadDialog
+            collection={collection}
+            onAdded={async () => {
+              // The repository updates its lists in place; copy so React re-renders.
+              const [c, refs] = await Promise.all([
+                getCollection(collection.id),
+                listReferences(collection.id),
+              ]);
+              if (c) setCollection(c);
+              setReferences([...refs]);
+            }}
+          />
+        }
+      />
     </>
   );
 }
