@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Button } from '@base-ui/react/button';
 import { Dialog } from '@base-ui/react/dialog';
 import { Input } from '@base-ui/react/input';
-import { boardAbsoluteUrl, href } from './href.ts';
 import { ArrowIcon, formatDate } from './parts.tsx';
 import {
   getShare,
@@ -15,7 +14,7 @@ import {
 import { getSession } from './session.ts';
 
 export function boardUrl(token: string) {
-  return boardAbsoluteUrl(token);
+  return `${window.location.origin}/m/${token}`;
 }
 
 // Publish a collection as an unlisted board, copy its link, rotate it or take it down.
@@ -142,7 +141,7 @@ export function ShareDialog({ collection }: { collection: Collection }) {
                 <div className="KeptDialogActions KeptDialogFooter">
                   <a
                     className="KeptLink KeptLinkArrow KeptText2"
-                    href={href.board(share.token)}
+                    href={`/m/${share.token}`}
                     target="_blank"
                     rel="noreferrer"
                   >

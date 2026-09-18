@@ -5,12 +5,13 @@ import { Input } from '@base-ui/react/input';
 import {
   ArrowIcon,
   BackLink,
+  ImageFill,
   Separator,
   formatBytes,
   formatDate,
+  fullImageStyle,
   useDocumentTitle,
 } from './parts.tsx';
-import { go, href } from './href.ts';
 import {
   getCollection,
   listReferences,
@@ -49,10 +50,10 @@ export function KeptReference({
 
   const index = references && reference ? references.findIndex((r) => r.id === reference.id) : -1;
   const hrefFor = (r: Reference | undefined) =>
-    r ? href.reference(collectionId, r.id) : undefined;
+    r ? `/library/${collectionId}/${r.id}` : undefined;
   const prevHref = references ? hrefFor(references[index - 1]) : undefined;
   const nextHref = references ? hrefFor(references[index + 1]) : undefined;
-  const collectionHref = href.collection(collectionId);
+  const collectionHref = `/library/${collectionId}`;
 
   // ← / → step through the collection, Escape goes back to it (never while typing).
   React.useEffect(() => {
@@ -70,7 +71,7 @@ export function KeptReference({
               : undefined;
       if (href) {
         event.preventDefault();
-        go(href);
+        window.location.assign(href);
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -82,7 +83,7 @@ export function KeptReference({
     return (
       <section className="KeptContents">
         <div className="KeptCol-hero KeptHeading">
-          <BackLink href={collection ? collectionHref : href.library}>
+          <BackLink href={collection ? collectionHref : '/library'}>
             {collection?.name ?? 'Library'}
           </BackLink>
           <h1 className="KeptDisplay">Reference not found</h1>
@@ -101,7 +102,7 @@ export function KeptReference({
       <section className="KeptContents">
         <div className="KeptCol-hero KeptHeading">
           <nav className="KeptCrumbs" aria-label="Breadcrumb">
-            <a className="KeptLink KeptText1" href={href.library}>
+            <a className="KeptLink KeptText1" href="/library">
               Library
             </a>
             <span className="KeptText1 KeptMuted" aria-hidden>
@@ -142,6 +143,7 @@ export function KeptReference({
         </div>
         <div className="KeptCol-body">
           <PinCanvas
+            reference={reference}
             pins={reference.pins}
             onAdd={(pin) => save({ pins: [...reference.pins, pin] })}
           />
@@ -304,13 +306,22 @@ function usePinFocus() {
   return React.useContext(PinFocusContext);
 }
 
-function PinCanvas({ pins, onAdd }: { pins: Pin[]; onAdd: (pin: Pin) => void }) {
+function PinCanvas({
+  reference,
+  pins,
+  onAdd,
+}: {
+  reference: Reference;
+  pins: Pin[];
+  onAdd: (pin: Pin) => void;
+}) {
   const { active, requestFocus } = usePinFocus();
   return (
     <div className="KeptCanvas">
       <button
         type="button"
         className="KeptImage KeptImageLarge"
+        style={fullImageStyle(reference)}
         aria-label="Drop a pin on the image"
         onClick={(event) => {
           // Keyboard activation has no pointer position: drop the pin in the center.
@@ -327,6 +338,7 @@ function PinCanvas({ pins, onAdd }: { pins: Pin[]; onAdd: (pin: Pin) => void }) 
           requestFocus(pin.id);
         }}
       >
+        <ImageFill src={reference.imageUrl} eager />
         {pins.map((pin, i) => (
           <span
             key={pin.id}

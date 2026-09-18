@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Button } from '@base-ui/react/button';
 import { Field } from '@base-ui/react/field';
 import { Form } from '@base-ui/react/form';
-import { go, href } from './href.ts';
 import { ArrowIcon, Separator } from './parts.tsx';
 import { signInWithPassword } from './session.ts';
 
@@ -27,7 +26,7 @@ export function KeptLogin() {
       <section className="KeptContents">
         <p className="KeptText2 KeptCol-body">
           Kept is invite-only. Sign in with the username you were given, or{' '}
-          <a className="KeptLink" href={href.request}>
+          <a className="KeptLink" href="/request">
             request an invite
           </a>
           .
@@ -53,7 +52,7 @@ export function KeptLogin() {
               setErrors({ [error.field]: error.message });
               return;
             }
-            go(href.library);
+            window.location.assign('/library');
           }}
         >
           <div className="KeptList">

@@ -1,11 +1,19 @@
-// Mock repository snapshotted from w-ade/kept-ui@d250e558.
-// Same UI-facing shape the real Supabase repository will expose. In memory, so edits reset on reload.
+import moodeMatcha from './data/moode-matcha.json';
+import { loadUploads, prepareUpload, saveUpload, type StoredUpload } from './uploads.ts';
+
+// Mock repository for the lab. Same UI-facing shape the real Supabase repository will expose
+// (see kept-v0.html: "keep the same UI-facing API"). Edits to notes, tags, pins and collection
+// descriptions are saved in this browser's localStorage; new collections too. Uploaded images
+// are saved in IndexedDB (uploads.ts). All of it stays on the device it was made on.
 
 export interface Collection {
   id: string;
   name: string;
   referenceCount: number;
   updatedAt: string; // ISO date
+  description: string;
+  // Thumbnails of the first few references, for the library mosaic
+  covers?: string[];
 }
 
 export interface Pin {
@@ -34,24 +42,146 @@ export interface Reference {
   width: number;
   height: number;
   bytes: number;
+  // Web copies of the file; absent for references without an image yet
+  imageUrl?: string;
+  thumbUrl?: string;
+}
+
+// Real images, imported with scripts/import-images.py (web copies in public/collections/).
+interface ImportedImage {
+  file: string;
+  fileName: string;
+  fileType: string;
+  width: number;
+  height: number;
+  bytes: number;
+}
+
+const IMPORTED: Record<string, { name: string; addedAt: string; images: ImportedImage[] }> = {
+  'moode-matcha': { name: 'moode-matcha', addedAt: '2026-09-18', images: moodeMatcha },
+};
+
+// ─── Saved edits ───
+// Stand-in for the database: what you type survives reloads on this device.
+
+type ReferenceEdit = Partial<Pick<Reference, 'notes' | 'tags' | 'pins'>>;
+
+interface SavedEdits {
+  references: Record<string, ReferenceEdit>;
+  collections: Record<string, { description?: string }>;
+}
+
+const EDITS_KEY = 'kept.lab.edits.v1';
+
+function readEdits(): SavedEdits {
+  try {
+    const raw = localStorage.getItem(EDITS_KEY);
+    if (raw) return JSON.parse(raw) as SavedEdits;
+  } catch {
+    // Unreadable or blocked storage: start clean.
+  }
+  return { references: {}, collections: {} };
+}
+
+const edits = readEdits();
+
+function writeEdits() {
+  try {
+    localStorage.setItem(EDITS_KEY, JSON.stringify(edits));
+  } catch {
+    // Storage blocked: edits last until reload.
+  }
+}
+
+// Collections made in the app (the imported ones come from IMPORTED).
+const CREATED_KEY = 'kept.lab.created.v1';
+
+type CreatedCollection = Pick<Collection, 'id' | 'name' | 'updatedAt'>;
+
+function readCreated(): CreatedCollection[] {
+  try {
+    const raw = localStorage.getItem(CREATED_KEY);
+    if (raw) return JSON.parse(raw) as CreatedCollection[];
+  } catch {
+    // Unreadable or blocked storage.
+  }
+  return [];
+}
+
+const created = readCreated();
+
+function writeCreated() {
+  try {
+    localStorage.setItem(CREATED_KEY, JSON.stringify(created));
+  } catch {
+    // Storage blocked: new collections last until reload.
+  }
+}
+
+// Uploaded references per collection, newest first.
+const uploaded = new Map<string, Reference[]>();
+
+// Reference count and mosaic covers come from uploads plus imported images.
+function withCounts(c: Collection): Collection {
+  const up = uploaded.get(c.id) ?? [];
+  const imported = IMPORTED[c.id]?.images ?? [];
+  const covers = [
+    ...up.map((r) => r.thumbUrl ?? ''),
+    ...imported.map((img) => `/collections/${c.id}/thumb/${img.file}`),
+  ].slice(0, 4);
+  return { ...c, referenceCount: up.length + imported.length, covers };
 }
 
 let collections: Collection[] = [
-  { id: 'type-specimens', name: 'Type specimens', referenceCount: 42, updatedAt: '2026-09-16' },
-  { id: 'wayfinding', name: 'Wayfinding', referenceCount: 18, updatedAt: '2026-09-12' },
-  { id: 'packaging', name: 'Packaging', referenceCount: 27, updatedAt: '2026-09-10' },
-  { id: 'brutalist-interiors', name: 'Brutalist interiors', referenceCount: 9, updatedAt: '2026-09-03' },
-  { id: 'swiss-posters', name: 'Swiss posters', referenceCount: 51, updatedAt: '2026-08-28' },
-  { id: 'motion-studies', name: 'Motion studies', referenceCount: 3, updatedAt: '2026-08-21' },
-  { id: 'annual-reports', name: 'Annual reports', referenceCount: 14, updatedAt: '2026-08-14' },
-  { id: 'unsorted', name: 'Unsorted', referenceCount: 0, updatedAt: '2026-08-02' },
-];
+  ...created.map((c) => ({ ...c, referenceCount: 0, description: '' })),
+  ...Object.entries(IMPORTED).map(([id, c]) => ({
+    id,
+    name: c.name,
+    referenceCount: c.images.length,
+    updatedAt: c.addedAt,
+    description: '',
+  })),
+].map((c) => withCounts({ ...c, description: edits.collections[c.id]?.description ?? '' }));
+
+function uploadToReference(u: StoredUpload): Reference {
+  return {
+    id: u.id,
+    collectionId: u.collectionId,
+    title: u.title,
+    notes: '',
+    tags: [],
+    pins: [],
+    addedAt: u.addedAt,
+    captureUrl: null,
+    fileName: u.fileName,
+    fileType: u.fileType,
+    width: u.width,
+    height: u.height,
+    bytes: u.bytes,
+    imageUrl: URL.createObjectURL(u.full),
+    thumbUrl: URL.createObjectURL(u.thumb),
+    ...edits.references[u.id],
+  };
+}
+
+// Everything waits for saved uploads to load once.
+const ready = loadUploads().then((list) => {
+  list.sort((a, b) => b.createdAt - a.createdAt);
+  for (const u of list) {
+    const refs = uploaded.get(u.collectionId) ?? [];
+    refs.push(uploadToReference(u));
+    uploaded.set(u.collectionId, refs);
+  }
+  collections = collections.map(withCounts);
+});
 
 export async function listCollections(): Promise<Collection[]> {
+  await ready;
   return collections;
 }
 
 export async function getCollection(id: string): Promise<Collection | undefined> {
+  await ready;
   return collections.find((c) => c.id === id);
 }
 
@@ -69,9 +199,25 @@ export async function createCollection(name: string): Promise<Collection> {
     name: name.trim(),
     referenceCount: 0,
     updatedAt: new Date().toISOString().slice(0, 10),
+    description: '',
   };
   collections = [collection, ...collections];
+  created.unshift({ id: collection.id, name: collection.name, updatedAt: collection.updatedAt });
+  writeCreated();
   return collection;
+}
+
+export async function updateCollection(
+  id: string,
+  patch: Pick<Collection, 'description'>,
+): Promise<Collection | undefined> {
+  const index = collections.findIndex((c) => c.id === id);
+  if (index === -1) return undefined;
+  const next = { ...collections[index], ...patch };
+  collections = collections.map((c) => (c.id === id ? next : c));
+  edits.collections[id] = { ...edits.collections[id], ...patch };
+  writeEdits();
+  return next;
 }
 
 // ─── References ───
@@ -79,14 +225,59 @@ export async function createCollection(name: string): Promise<Collection> {
 const referenceCache = new Map<string, Reference[]>();
 
 export async function listReferences(collectionId: string): Promise<Reference[]> {
+  await ready;
   const collection = collections.find((c) => c.id === collectionId);
   if (!collection) return [];
   let list = referenceCache.get(collectionId);
   if (!list) {
-    list = generateReferences(collection);
+    list = [...(uploaded.get(collectionId) ?? []), ...importedReferences(collection)];
     referenceCache.set(collectionId, list);
   }
   return list;
+}
+
+export type UploadStatus = 'adding' | 'added' | 'failed';
+
+// Add image files to a collection, one at a time; newest end up first.
+export async function addUploads(
+  collectionId: string,
+  files: File[],
+  onProgress: (index: number, status: UploadStatus) => void,
+): Promise<Reference[]> {
+  const list = await listReferences(collectionId);
+  const added: Reference[] = [];
+  for (const [index, file] of files.entries()) {
+    onProgress(index, 'adding');
+    try {
+      const upload = await prepareUpload(file, collectionId, index);
+      await saveUpload(upload);
+      const reference = uploadToReference(upload);
+      uploaded.set(collectionId, [reference, ...(uploaded.get(collectionId) ?? [])]);
+      list.unshift(reference);
+      added.push(reference);
+      onProgress(index, 'added');
+    } catch {
+      onProgress(index, 'failed');
+    }
+  }
+  if (added.length > 0) {
+    const today = new Date().toISOString().slice(0, 10);
+    collections = collections.map((c) =>
+      c.id === collectionId ? withCounts({ ...c, updatedAt: today }) : c,
+    );
+    const mine = created.find((c) => c.id === collectionId);
+    if (mine) {
+      mine.updatedAt = today;
+      writeCreated();
+    }
+  }
+  return added;
+}
+
+// Every reference in every collection, collection order then reference order.
+export async function listAllReferences(): Promise<Reference[]> {
+  const lists = await Promise.all(collections.map((c) => listReferences(c.id)));
+  return lists.flat();
 }
 
 export async function updateReference(
@@ -99,154 +290,34 @@ export async function updateReference(
   if (index === -1) return undefined;
   const next = { ...list[index], ...patch };
   list[index] = next;
+  edits.references[referenceId] = { ...edits.references[referenceId], ...patch };
+  writeEdits();
   return next;
 }
 
-// ─── Fixtures ───
+// ─── Imported images → references ───
 
-const TITLES: Record<string, string[]> = {
-  'type-specimens': [
-    'Grotesk No. 9 specimen',
-    'Caslon broadside',
-    'Akzidenz sample sheet',
-    'Futura promotional booklet',
-    'Univers weight chart',
-    'Didot foundry proof',
-    'Clarendon wood type',
-    'Gill Sans catalogue',
-  ],
-  wayfinding: [
-    'Airport gate signage',
-    'Metro line diagram',
-    'Hospital floor directory',
-    'Parking level markers',
-    'Campus map totem',
-    'Museum room numbers',
-  ],
-  packaging: [
-    'Matchbox label',
-    'Tea tin',
-    'Pharmacy carton',
-    'Soap wrapper',
-    'Record sleeve',
-    'Cigarette pack',
-    'Coffee bag',
-  ],
-  'brutalist-interiors': [
-    'Concrete stairwell',
-    'Library reading room',
-    'Chapel ceiling',
-    'Bank lobby',
-    'Housing block corridor',
-  ],
-  'swiss-posters': [
-    'Konzert poster',
-    'Kunsthalle exhibition',
-    'Der Film poster',
-    'Tonhalle season',
-    'Plakat for safety',
-    'Olympic games poster',
-  ],
-  'motion-studies': ['Title sequence frames', 'Loading loop', 'Kinetic type sketch'],
-  'annual-reports': [
-    'Chemical company report',
-    'Bank annual review',
-    'Airline report cover',
-    'Utilities data spread',
-  ],
-};
-
-// Capture sources; null means uploaded from disk.
-const SOURCES: (string | null)[] = [
-  'https://archive.org/details/',
-  'https://fontsinuse.com/uses/',
-  'https://www.are.na/block/',
-  'https://letterformarchive.org/items/',
-  'https://collection.cooperhewitt.org/objects/',
-  'https://www.flickr.com/photos/archive/',
-  null,
-];
-
-const TAGS: Record<string, string[]> = {
-  'type-specimens': ['serif', 'grotesk', 'specimen', 'letterpress', 'weights', 'foundry'],
-  wayfinding: ['signage', 'pictograms', 'color coding', 'arrows', 'maps'],
-  packaging: ['label', 'print', 'retail', 'color', 'illustration'],
-  'brutalist-interiors': ['concrete', 'light', 'stairs', 'texture'],
-  'swiss-posters': ['grid', 'photo', 'type-only', 'red', 'Helvetica'],
-  'motion-studies': ['loop', 'easing', 'type'],
-  'annual-reports': ['charts', 'covers', 'data', 'grid'],
-};
-
-const FORMATS: { type: string; ext: string; bytesPerPixel: number }[] = [
-  { type: 'JPEG', ext: 'jpg', bytesPerPixel: 0.35 },
-  { type: 'PNG', ext: 'png', bytesPerPixel: 1.4 },
-  { type: 'TIFF', ext: 'tif', bytesPerPixel: 3 },
-  { type: 'WebP', ext: 'webp', bytesPerPixel: 0.25 },
-];
-const SIZES = [
-  [2400, 2400],
-  [3000, 2000],
-  [2000, 3000],
-  [1600, 2000],
-  [3200, 2400],
-];
-
-// Deterministic "random" so fixtures look the same on every load.
-function seeded(seed: string) {
-  let h = 2166136261;
-  for (let i = 0; i < seed.length; i += 1) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
-  return () => {
-    h = Math.imul(h ^ (h >>> 15), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    h ^= h >>> 16;
-    return (h >>> 0) / 4294967296;
-  };
-}
-
-function generateReferences(collection: Collection): Reference[] {
-  const titles = TITLES[collection.id] ?? [collection.name];
-  const tagPool = TAGS[collection.id] ?? [];
-  const random = seeded(collection.id);
-  const pick = <T,>(list: T[]) => list[Math.floor(random() * list.length)];
-  const updated = new Date(`${collection.updatedAt}T12:00:00`);
-
-  return Array.from({ length: collection.referenceCount }, (_, i) => {
-    const round = Math.floor(i / titles.length);
-    const title = titles[i % titles.length] + (round > 0 ? ` ${round + 1}` : '');
-    const [width, height] = pick(SIZES);
-    const added = new Date(updated);
-    added.setDate(added.getDate() - i * 2);
-    const tags = tagPool.filter(() => random() < 0.35).slice(0, 3);
-    const format = pick(FORMATS);
-    const source = pick(SOURCES);
-    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    return {
-      id: `${collection.id}-${String(i + 1).padStart(3, '0')}`,
-      collectionId: collection.id,
-      title,
-      addedAt: added.toISOString().slice(0, 10),
-      captureUrl: source ? `${source}${10000 + Math.floor(random() * 89999)}` : null,
-      fileName: `${slug}.${format.ext}`,
-      fileType: format.type,
-      width,
-      height,
-      bytes: Math.round(width * height * format.bytesPerPixel * (0.85 + random() * 0.3)),
-      notes:
-        i === 0
-          ? 'Tight spacing on the display sizes. Compare the lowercase g with the 1962 cut.'
-          : i % 5 === 1
-            ? 'Good reference for the hierarchy between headline and caption.'
-            : '',
-      tags: tags.length > 0 || tagPool.length === 0 ? tags : [pick(tagPool)],
-      pins:
-        i === 0
-          ? [
-              { id: 'p1', x: 0.28, y: 0.3, caption: 'Ink trap on the lowercase a' },
-              { id: 'p2', x: 0.66, y: 0.62, caption: 'Figures sit on the baseline' },
-            ]
-          : [],
-    };
-  });
+function importedReferences(collection: Collection): Reference[] {
+  const source = IMPORTED[collection.id];
+  if (!source) return [];
+  return source.images.map((img, i) => ({
+    id: `${collection.id}-${img.file.replace(/\.\w+$/, '')}`,
+    collectionId: collection.id,
+    // No titles yet; numbered until they're named in the app.
+    title: `No. ${String(i + 1).padStart(3, '0')}`,
+    notes: '',
+    tags: [],
+    pins: [],
+    addedAt: source.addedAt,
+    captureUrl: null,
+    fileName: img.fileName,
+    fileType: img.fileType,
+    width: img.width,
+    height: img.height,
+    bytes: img.bytes,
+    imageUrl: `/collections/${collection.id}/full/${img.file}`,
+    thumbUrl: `/collections/${collection.id}/thumb/${img.file}`,
+  })).map((r) => ({ ...r, ...edits.references[r.id] }));
 }
 
 // ─── Boards (published collections) ───
@@ -260,11 +331,12 @@ export interface Share {
   publishedAt: string; // ISO date
 }
 
-const SHARES_KEY = 'kept.lab.shares';
+// Versioned so old saved shares (from the sample collections) don't linger.
+const SHARES_KEY = 'kept.lab.shares.v2';
 
 // One board is published from the start so there's always something to open.
 const SEED_SHARES: Record<string, Share> = {
-  'type-specimens': { token: 'tsp8f3k2qx', owner: 'wade', publishedAt: '2026-09-17' },
+  'moode-matcha': { token: 'mm7q2x9kfa', owner: 'wade', publishedAt: '2026-09-18' },
 };
 
 function readShares(): Record<string, Share> {
@@ -329,10 +401,55 @@ export interface Board {
 }
 
 export async function getBoard(token: string): Promise<Board | undefined> {
+  await ready;
   const entry = Object.entries(shares).find(([, s]) => s.token === token);
   if (!entry) return undefined;
   const [collectionId, share] = entry;
   const collection = collections.find((c) => c.id === collectionId);
   if (!collection) return undefined;
   return { collection, references: await listReferences(collectionId), share };
+}
+
+// ─── Invite requests ───
+// Kept is invite-only; requests wait for the owner to let people in by hand.
+// Saved in this browser for the lab; the real app stores them in Supabase.
+
+export interface InviteRequest {
+  name: string;
+  email: string;
+  note: string;
+  requestedAt: string; // ISO date
+}
+
+const REQUESTS_KEY = 'kept.lab.requests.v1';
+
+function readRequests(): InviteRequest[] {
+  try {
+    const raw = localStorage.getItem(REQUESTS_KEY);
+    if (raw) return JSON.parse(raw) as InviteRequest[];
+  } catch {
+    // Unreadable or blocked storage.
+  }
+  return [];
+}
+
+export async function requestInvite(
+  request: Omit<InviteRequest, 'requestedAt'>,
+): Promise<{ alreadyRequested: boolean }> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  const requests = readRequests();
+  const email = request.email.trim().toLowerCase();
+  if (requests.some((r) => r.email === email)) return { alreadyRequested: true };
+  requests.push({
+    name: request.name.trim(),
+    email,
+    note: request.note.trim(),
+    requestedAt: new Date().toISOString().slice(0, 10),
+  });
+  try {
+    localStorage.setItem(REQUESTS_KEY, JSON.stringify(requests));
+  } catch {
+    // Storage blocked: the request isn't kept.
+  }
+  return { alreadyRequested: false };
 }
