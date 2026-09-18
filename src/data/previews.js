@@ -10,25 +10,44 @@ export function swatch(color) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
 
+const PALETTE = [
+  "#F04452", // Red
+  "#FF9F1A", // Orange
+  "#FFD84A", // Yellow
+  "#20C76A", // Green
+  "#2EC5E8", // Cyan
+  "#4B73FF", // Blue
+  "#8B5CF6", // Violet
+  "#E94BFF", // Magenta
+]
+
+/**
+ * @param {number} index
+ * @returns {string}
+ */
+function tone(index) {
+  return PALETTE[index % PALETTE.length]
+}
+
 export const previews = {
-  bazaar: swatch("#C45C3E"),
-  grotesk: swatch("#1C1C1C"),
-  ando: swatch("#C4B8A8"),
-  cadmium: swatch("#E23B14"),
-  braun: swatch("#C8C2B6"),
-  braunDetail: swatch("#A8A296"),
-  braunBack: swatch("#8A8478"),
-  stalker: swatch("#1C2418"),
-  binding: swatch("#D9C9A8"),
-  subway: swatch("#1569FF"),
-  perriand: swatch("#C5D9C8"),
-  candy: swatch("#FA586A"),
+  bazaar: swatch(tone(0)),
+  grotesk: swatch(tone(1)),
+  ando: swatch(tone(2)),
+  cadmium: swatch(tone(3)),
+  braun: swatch(tone(4)),
+  braunDetail: swatch(tone(5)),
+  braunBack: swatch(tone(6)),
+  stalker: swatch(tone(7)),
+  binding: swatch(tone(8)),
+  subway: swatch(tone(9)),
+  perriand: swatch(tone(10)),
+  candy: swatch(tone(11)),
   kowloon: null,
-  regmark: swatch("#111111"),
-  e1027: swatch("#C5D7E3"),
-  cyano: swatch("#0B3A6E"),
-  soleil: swatch("#0E0E0E"),
-  pinboard: swatch("#CBB48A"),
-  grain: swatch("#E8D5B0"),
-  menu: swatch("#EDE4D0"),
+  regmark: swatch(tone(12)),
+  e1027: swatch(tone(13)),
+  cyano: swatch(tone(14)),
+  soleil: swatch(tone(15)),
+  pinboard: swatch(tone(16)),
+  grain: swatch(tone(17)),
+  menu: swatch(tone(18)),
 }
