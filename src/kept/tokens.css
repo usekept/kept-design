@@ -1,0 +1,61 @@
+/*
+ * Tokens the Kept operate screens need from the lab's src/docs.css (base-ui.com theme).
+ * Do not import the lab docs playground stylesheet — landing and /map keep product CSS.
+ */
+@layer theme, components;
+
+@layer theme {
+  :root {
+    --gray-s1: hsl(0deg 0% 99%);
+    --gray-s2: hsl(0deg 0% 97.5%);
+    --gray-c1: hsl(0deg 0% 95.25%);
+    --gray-c2: hsl(0deg 0% 94%);
+    --gray-c3: hsl(0deg 0% 88%);
+    --gray-p1: hsl(0deg 0% 55%);
+    --gray-p2: hsl(0deg 0% 51%);
+    --gray-t1: hsl(0deg 0% 46.4%);
+    --gray-t2: hsl(0deg 0% 18%);
+    --blackA-2: hsl(0deg 0% 0% / 8%);
+    --whiteA-5: hsl(0deg 0% 100% / 24%);
+    --poppy-t1: hsl(10deg 86% 48%);
+    --green-t1: hsl(156deg 81% 29%);
+    --font-sans: "Geist Variable", system-ui, sans-serif;
+    --font-sans-b: var(--font-sans);
+    --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --color-popup: white;
+    --radius-4: 0.25rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --gray-s1: hsl(0deg 0% 7.5%);
+      --gray-s2: hsl(0deg 0% 10%);
+      --gray-c1: hsl(0deg 0% 13%);
+      --gray-c2: hsl(0deg 0% 16%);
+      --gray-c3: hsl(0deg 0% 32%);
+      --gray-p1: hsl(0deg 0% 60%);
+      --gray-p2: hsl(0deg 0% 64%);
+      --gray-t1: hsl(0deg 0% 70%);
+      --gray-t2: hsl(0deg 0% 90%);
+      --color-popup: var(--gray-s1);
+      --poppy-t1: hsl(10deg 96% 63%);
+      --green-t1: hsl(156deg 68% 54%);
+    }
+  }
+}
+
+.bui-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.KeptBody {
+  color-scheme: light dark;
+}

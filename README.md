@@ -6,10 +6,10 @@ organizing, contextualizing, and retrieving visual references.
 > A library you can actually operate.
 
 The durable product is the reference system — not a moodboard, not a canvas,
-and not a generic file locker. The first operable slice is `/library`: a
-creator-focused library with Drive-like operability (sidebar, grid/list,
-search, bulk actions, details) over Kept objects (References, Assets,
-collections, tags, notes, relationships).
+and not a generic file locker. Operate UI is a snapshot of
+[w-ade/kept-ui](https://github.com/w-ade/kept-ui) at `d250e558` (`src/kept/`),
+wired to real SPA paths. The lab Base UI docs playground (`src/demos/`) is
+not in this repo.
 
 ## Product model
 
@@ -27,24 +27,23 @@ The fundamental actions are:
 - **Retrieve** — Actually find a reference again and understand why it matters.
 - **Connect** — Relate one reference to another.
 
-Index-later fields on a reference (`keywords`, `description`, `ocrText`,
-`embedding`) exist in the model and stay empty. There is no AI pipeline yet.
-
 ## Current state
 
-- `/` — product landing.
-- `/library` — collections index (stacked buckets) then operate chrome
-  inside a collection: sidebar, grid/list browser, search/filters,
-  multi-select bulk filing, inspector.
+- `/` — product landing (kept.design chrome, not the lab landing).
+- `/login` — mock username + password.
+- `/login/mfa` — TOTP stand-in (continue without a code).
+- `/library` — collections index (app home). Signed in.
+- `/library/:collectionId` — operate a collection. Inspector is the same
+  route with `?r=` for the selected reference.
+- `/m/:token` — unlisted read-only moodboard. No chrome, no login.
 - `/map` — system map (architecture diagram, not the running stack).
 
-Persistence is a single boundary: `src/data/repository.js`. Today it reads
-`src/data/fixtures.js` (a personal visual-reference library). UI code must not
-import fixtures directly. Swap the repository internals for local JSON or
-hosted storage later.
+Persistence is the mock in `src/kept/repository.ts`. Session is mocked in
+`src/kept/session.ts` (lab account `wade` / `1234`). Swap those for Supabase
+later; do not block the UI on it.
 
-Domain types live in `src/domain/types.js` (JSDoc). The app stays JavaScript
-on Vite + React 19.
+Stack: Vite + React 19 + `@base-ui/react` + Geist on the operate screens.
+Landing and `/map` keep the existing product typeface.
 
 ## Run locally
 
@@ -53,23 +52,13 @@ npm install
 npm run dev
 ```
 
-Open the URL Vite prints (default http://localhost:5173). Routes: `/`,
-`/library`, `/map`. For a phone on the same network, run
-`npm run dev -- --host 0.0.0.0`.
+Open the URL Vite prints (default http://localhost:5173). For a phone on the
+same network, run `npm run dev -- --host 0.0.0.0`.
 
 ```sh
 npm run build
 npm run preview
 ```
 
-## Edit the current UI
-
-- `src/config/site.js`: name, description, status, accent, and home link.
-- `src/components/SiteMasthead.jsx`: header + landing / library / map nav.
-- `src/pages/Library.jsx`: operate surface.
-- `src/data/repository.js`: persistence boundary.
-- `src/domain/types.js`: Reference, Asset, Collection, Tag, Note, Relationship, User.
-- `src/App.jsx`: landing copy and pathname routing.
-- `src/index.css`: site styles, including the 672px mobile breakpoint.
-
-Vercel continues to use the existing Vite configuration and `dist` output.
+Vercel continues to use the existing Vite configuration and `dist` output,
+with a SPA rewrite so operate routes load `index.html`.
