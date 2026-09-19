@@ -1,0 +1,728 @@
+<title>Kept Backend Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #fafafb;
+    --panel: #ffffff;
+    --side: #f3f3f5;
+    --ink: #16171a;
+    --ink-2: #5a5d65;
+    --ink-3: #8a8d95;
+    --line: #e6e7ea;
+    --line-2: #efeff2;
+    --hover: #eeeff2;
+    --active: #e7e8ec;
+    --accent: #3d7a36;
+    --accent-soft: rgb(61 122 54 / 10%);
+    --st-backlog: #a0a3a9;
+    --st-todo: #a9acb3;
+    --st-progress: #d99a13;
+    --st-review: #2f9a5f;
+    --st-done: #3d7a36;
+    --st-canceled: #a0a3a9;
+    --urgent: #e0602f;
+    --decision: #7a5bd6;
+    --shadow: 0 12px 40px rgb(20 22 28 / 14%), 0 1px 3px rgb(20 22 28 / 8%);
+    --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111113;
+      --panel: #17181b;
+      --side: #0d0d0f;
+      --ink: #ecedef;
+      --ink-2: #a3a6ad;
+      --ink-3: #6f737b;
+      --line: #25272c;
+      --line-2: #1e2024;
+      --hover: #1d1f23;
+      --active: #24262b;
+      --accent: #8fc47f;
+      --accent-soft: rgb(143 196 127 / 12%);
+      --st-backlog: #6f737b;
+      --st-todo: #8a8d95;
+      --st-progress: #e8b23c;
+      --st-review: #4fbf82;
+      --st-done: #8fc47f;
+      --st-canceled: #6f737b;
+      --urgent: #f07a4a;
+      --decision: #a48bf0;
+      --shadow: 0 12px 40px rgb(0 0 0 / 50%), 0 1px 3px rgb(0 0 0 / 40%);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111113;
+    --panel: #17181b;
+    --side: #0d0d0f;
+    --ink: #ecedef;
+    --ink-2: #a3a6ad;
+    --ink-3: #6f737b;
+    --line: #25272c;
+    --line-2: #1e2024;
+    --hover: #1d1f23;
+    --active: #24262b;
+    --accent: #8fc47f;
+    --accent-soft: rgb(143 196 127 / 12%);
+    --st-backlog: #6f737b;
+    --st-todo: #8a8d95;
+    --st-progress: #e8b23c;
+    --st-review: #4fbf82;
+    --st-done: #8fc47f;
+    --st-canceled: #6f737b;
+    --urgent: #f07a4a;
+    --decision: #a48bf0;
+    --shadow: 0 12px 40px rgb(0 0 0 / 50%), 0 1px 3px rgb(0 0 0 / 40%);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 13px/1.45 var(--font);
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 4px; }
+  code {
+    font: 12px/1.3 var(--mono);
+    background: var(--hover);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0 4px;
+    white-space: nowrap;
+  }
+
+  .app { display: grid; grid-template-columns: 232px minmax(0, 1fr); height: 100%; }
+
+  /* Sidebar */
+  .side {
+    background: var(--side);
+    border-right: 1px solid var(--line);
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+  }
+  .ws { display: flex; align-items: center; gap: 8px; padding: 4px 8px; }
+  .ws-mark {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--ink); color: var(--bg);
+    display: grid; place-items: center;
+    font: 600 10px/1 var(--font); letter-spacing: .04em;
+  }
+  .ws-name { font-weight: 600; }
+  .ws-sub { color: var(--ink-3); font-size: 12px; }
+  .nav-group { display: flex; flex-direction: column; gap: 1px; }
+  .nav-label {
+    color: var(--ink-3); font-size: 11px; font-weight: 500;
+    padding: 0 8px 4px; letter-spacing: .02em;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 6px; border: 0; background: none;
+    text-align: left; color: var(--ink-2); width: 100%;
+  }
+  .nav-item:hover { background: var(--hover); color: var(--ink); }
+  .nav-item[aria-current="true"] { background: var(--active); color: var(--ink); font-weight: 500; }
+  .nav-item .count { margin-left: auto; color: var(--ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .nav-item svg { flex: none; }
+  .ring { flex: none; }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; min-width: 0; height: 100%; overflow: hidden; }
+  .bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px; border-bottom: 1px solid var(--line);
+    background: var(--bg); min-height: 46px; flex-wrap: wrap;
+  }
+  .bar h1 { font-size: 13px; font-weight: 500; margin: 0; }
+  .bar .crumb { color: var(--ink-3); }
+  .bar .spacer { flex: 1; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .seg button { border: 0; background: var(--panel); padding: 3px 9px; color: var(--ink-2); }
+  .seg button[aria-pressed="true"] { background: var(--active); color: var(--ink); }
+  .search {
+    border: 1px solid var(--line); background: var(--panel); border-radius: 6px;
+    padding: 3px 9px; width: 180px; max-width: 40vw;
+  }
+  .search::placeholder { color: var(--ink-3); }
+  .scroll { overflow-y: auto; flex: 1; }
+  .note-bar {
+    margin: 0; padding: 8px 20px; font-size: 12px; color: var(--ink-2);
+    background: var(--accent-soft); border-bottom: 1px solid var(--line);
+  }
+
+  /* Issue list */
+  .group-head {
+    position: sticky; top: 0; z-index: 1;
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 20px; background: var(--side);
+    border-bottom: 1px solid var(--line-2);
+    font-weight: 500;
+  }
+  .group-head .count { color: var(--ink-3); font-weight: 400; font-variant-numeric: tabular-nums; }
+  .row {
+    display: grid;
+    grid-template-columns: 22px 66px 18px minmax(0, 1fr) auto auto 34px;
+    align-items: center; gap: 10px;
+    padding: 0 20px; height: 38px; width: 100%;
+    border: 0; border-bottom: 1px solid var(--line-2);
+    background: var(--bg); text-align: left; color: var(--ink);
+  }
+  .row:hover { background: var(--hover); }
+  .row[aria-selected="true"] { background: var(--active); }
+  .key { font: 12px var(--mono); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chips { display: flex; gap: 4px; justify-content: flex-end; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 0 7px; height: 20px; font-size: 11.5px; color: var(--ink-2);
+    white-space: nowrap; background: var(--panel);
+  }
+  .chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .proj { color: var(--ink-2); font-size: 12px; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+  .est { color: var(--ink-3); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  .empty { padding: 48px 20px; color: var(--ink-3); text-align: center; }
+  .skeleton { height: 38px; border-bottom: 1px solid var(--line-2); position: relative; }
+  .skeleton::after {
+    content: ""; position: absolute; left: 20px; right: 40%; top: 14px; height: 10px;
+    border-radius: 4px; background: var(--line-2);
+  }
+
+  /* Overview + projects + decisions */
+  .doc { max-width: 820px; padding: 28px 28px 64px; display: flex; flex-direction: column; gap: 28px; }
+  .doc h2 { font-size: 20px; font-weight: 600; margin: 0 0 6px; text-wrap: balance; letter-spacing: -.01em; }
+  .doc h3 { font-size: 13px; font-weight: 600; margin: 0 0 8px; }
+  .doc p { margin: 0; color: var(--ink-2); max-width: 68ch; }
+  .doc p + p { margin-top: 8px; }
+  .lede { font-size: 14px; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+  .kv dt { color: var(--ink-3); }
+  .kv dd { margin: 0; color: var(--ink-2); }
+  pre.diagram {
+    margin: 0; padding: 14px 16px; overflow-x: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    font: 12px/1.55 var(--mono); color: var(--ink-2);
+  }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; }
+  th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+  th { font-weight: 500; color: var(--ink-3); font-size: 12px; }
+  tr:last-child td { border-bottom: 0; }
+  td code { white-space: nowrap; }
+  ul.plain { margin: 0; padding-left: 18px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .card {
+    border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
+    padding: 14px; display: flex; flex-direction: column; gap: 8px; text-align: left; color: var(--ink);
+  }
+  button.card:hover { border-color: var(--ink-3); }
+  .card-head { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  .card p { margin: 0; color: var(--ink-2); font-size: 12.5px; }
+  .meter { height: 4px; border-radius: 4px; background: var(--line-2); overflow: hidden; }
+  .meter span { display: block; height: 100%; background: var(--accent); }
+  .card-foot { display: flex; justify-content: space-between; color: var(--ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+  .decision { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .decision-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .decision-head h3 { margin: 0; }
+  .badge { font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; }
+  .badge.open { color: var(--decision); }
+  .badge.decided { color: var(--st-done); }
+  .options { display: flex; flex-direction: column; gap: 6px; }
+  .option {
+    display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start;
+    border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; background: var(--bg);
+    text-align: left; color: var(--ink); width: 100%;
+  }
+  .option:hover { border-color: var(--ink-3); }
+  .option[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .option .dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--ink-3); margin-top: 2px; }
+  .option[aria-checked="true"] .dot { border: 4px solid var(--accent); }
+  .option b { font-weight: 500; }
+  .option small { display: block; color: var(--ink-2); font-size: 12.5px; margin-top: 2px; }
+  .rec { color: var(--accent); font-size: 11.5px; font-weight: 500; margin-left: 6px; }
+
+  /* Detail panel */
+  .scrim { position: fixed; inset: 0; background: rgb(0 0 0 / 18%); z-index: 10; }
+  .panel {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 11;
+    width: min(620px, 100%); background: var(--panel); box-shadow: var(--shadow);
+    border-left: 1px solid var(--line); display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .panel-top { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .panel-top .spacer { flex: 1; }
+  .icon-btn { border: 0; background: none; padding: 4px 8px; border-radius: 6px; color: var(--ink-2); }
+  .icon-btn:hover { background: var(--hover); color: var(--ink); }
+  .panel-body { overflow-y: auto; padding: 20px 24px 48px; display: flex; flex-direction: column; gap: 22px; }
+  .panel-body h2 { font-size: 19px; font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+  .props { display: grid; grid-template-columns: 96px 1fr; gap: 8px 12px; align-items: center; }
+  .props dt { color: var(--ink-3); font-size: 12px; }
+  .props dd { margin: 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .select {
+    appearance: none; border: 1px solid var(--line); background: var(--bg); border-radius: 6px;
+    padding: 3px 26px 3px 8px; color: var(--ink);
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%);
+    background-position: calc(100% - 13px) 55%, calc(100% - 9px) 55%;
+    background-size: 4px 4px; background-repeat: no-repeat;
+  }
+  .select:disabled { opacity: .7; }
+  .section h3 { font-size: 12px; font-weight: 500; color: var(--ink-3); margin: 0 0 8px; letter-spacing: .02em; }
+  .section p { margin: 0; color: var(--ink); max-width: 66ch; }
+  .section ol, .section ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+  .section li { padding-left: 2px; }
+  .checks { list-style: none; padding-left: 0 !important; }
+  .checks li { display: grid; grid-template-columns: 16px 1fr; gap: 8px; }
+  .checks li::before { content: ""; width: 12px; height: 12px; border: 1.5px solid var(--ink-3); border-radius: 3px; margin-top: 3px; }
+  .section pre {
+    margin: 0; padding: 12px 14px; overflow-x: auto;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+    font: 12px/1.55 var(--mono); color: var(--ink-2);
+  }
+  .link-btn { border: 0; background: none; padding: 0; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+  .link-btn:hover { text-decoration-color: currentColor; }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+    background: var(--ink); color: var(--bg); padding: 7px 12px; border-radius: 6px; z-index: 20; font-size: 12.5px;
+  }
+
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+    .side {
+      flex-direction: row; gap: 4px; padding: 8px 12px; overflow-x: auto; overflow-y: hidden;
+      border-right: 0; border-bottom: 1px solid var(--line); align-items: center;
+    }
+    .ws, .nav-label { display: none; }
+    .nav-group { flex-direction: row; gap: 4px; }
+    .nav-item { width: auto; white-space: nowrap; }
+    .nav-item .count { margin-left: 4px; }
+    .bar { padding: 8px 16px; }
+    .search { width: 100%; max-width: none; order: 5; }
+    .row { grid-template-columns: 18px 58px 16px minmax(0, 1fr) 30px; padding: 0 16px; gap: 8px; }
+    .row .chips, .row .proj { display: none; }
+    .group-head { padding: 7px 16px; }
+    .doc { padding: 20px 16px 48px; }
+    .panel-body { padding: 16px 16px 40px; }
+    .props { grid-template-columns: 84px 1fr; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .panel { animation: slide .16s ease-out; }
+    @keyframes slide { from { transform: translateX(16px); opacity: 0; } }
+  }
+</style>
+
+<div class="app">
+  <nav class="side" aria-label="Views" id="side"></nav>
+  <main class="main">
+    <div class="bar" id="bar"></div>
+    <p class="note-bar" id="note" hidden></p>
+    <div class="scroll" id="view"></div>
+  </main>
+</div>
+<div id="overlay"></div>
+
+<script>
+(() => {
+  const STATUSES = [
+    { id: 'in_progress', label: 'In progress' },
+    { id: 'in_review', label: 'In review' },
+    { id: 'todo', label: 'Todo' },
+    { id: 'backlog', label: 'Backlog' },
+    { id: 'done', label: 'Done' },
+    { id: 'canceled', label: 'Canceled' },
+  ];
+  const PRIORITIES = [
+    { id: 1, label: 'Urgent' }, { id: 2, label: 'High' }, { id: 3, label: 'Medium' },
+    { id: 4, label: 'Low' }, { id: 0, label: 'No priority' },
+  ];
+  const LABEL_COLORS = {
+    decision: 'var(--decision)', 'kept-ui first': 'var(--urgent)', security: '#d0493a',
+    db: '#3b82c4', auth: '#b0791c', storage: '#2a9d8f', 'edge function': '#8c6bd6',
+    infra: '#6b7280', ui: '#d0578c', data: '#3b82c4', ops: '#6b7280',
+  };
+
+  const state = {
+    view: 'all',            // all | active | backlog | done | overview | decisions | project:<id>
+    group: 'status',        // status | project
+    query: '',
+    open: null,             // issue key in the panel
+    issues: [], projects: [], decisions: [],
+    loaded: false, dbOk: null, writable: true, static: false,
+  };
+  try {
+    const saved = JSON.parse(localStorage.getItem('kbr.prefs') || '{}');
+    if (saved.view) state.view = saved.view;
+    if (saved.group) state.group = saved.group;
+  } catch {}
+  const savePrefs = () => { try { localStorage.setItem('kbr.prefs', JSON.stringify({ view: state.view, group: state.group })); } catch {} };
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const fmt = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+  const byOrder = (a, b) => (a.order ?? 0) - (b.order ?? 0);
+  const issueNum = (k) => Number(String(k).split('-')[1]) || 0;
+
+  /* Icons */
+  function statusIcon(id, size = 14) {
+    const c = `var(--st-${{ in_progress: 'progress', in_review: 'review', canceled: 'canceled' }[id] || id})`;
+    const r = 6, cx = 7;
+    const ring = `<circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${c}" stroke-width="1.5"${id === 'backlog' ? ' stroke-dasharray="2.2 2"' : ''}/>`;
+    let inner = '';
+    if (id === 'in_progress') inner = `<path d="M7 3.5 A3.5 3.5 0 0 1 7 10.5 Z" fill="${c}"/>`;
+    if (id === 'in_review') inner = `<path d="M7 3.5 A3.5 3.5 0 1 1 3.5 7 L7 7 Z" fill="${c}"/>`;
+    if (id === 'done') return `<svg width="${size}" height="${size}" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6.5" fill="${c}"/><path d="M4.3 7.2 6.2 9 9.8 5.2" fill="none" stroke="var(--panel)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    if (id === 'canceled') return `<svg width="${size}" height="${size}" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6.5" fill="${c}"/><path d="M5 5 9 9M9 5 5 9" stroke="var(--panel)" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+    return `<svg width="${size}" height="${size}" viewBox="0 0 14 14" aria-hidden="true">${ring}${inner}</svg>`;
+  }
+  function priorityIcon(p) {
+    if (p === 1) return `<svg width="14" height="14" viewBox="0 0 14 14" aria-label="Urgent" role="img"><rect x="1" y="1" width="12" height="12" rx="3" fill="var(--urgent)"/><path d="M7 3.8v4" stroke="var(--panel)" stroke-width="1.6" stroke-linecap="round"/><circle cx="7" cy="10.1" r=".95" fill="var(--panel)"/></svg>`;
+    if (!p) return `<svg width="14" height="14" viewBox="0 0 14 14" aria-label="No priority" role="img"><g fill="var(--ink-3)"><rect x="1.5" y="6.3" width="2.4" height="1.4" rx=".6"/><rect x="5.8" y="6.3" width="2.4" height="1.4" rx=".6"/><rect x="10.1" y="6.3" width="2.4" height="1.4" rx=".6"/></g></svg>`;
+    const lit = { 2: 3, 3: 2, 4: 1 }[p];
+    const bars = [[2, 8, 4], [6, 5, 7], [10, 2, 10]].map(([x, y, h], i) =>
+      `<rect x="${x}" y="${y}" width="2.4" height="${h}" rx=".8" fill="${i < lit ? 'var(--ink-2)' : 'var(--line)'}"/>`).join('');
+    return `<svg width="14" height="14" viewBox="0 0 14 14" aria-label="${PRIORITIES.find((x) => x.id === p).label}" role="img">${bars}</svg>`;
+  }
+  function ring(pct, size = 14) {
+    const r = 5.5, c = 2 * Math.PI * r;
+    return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="${r}" fill="none" stroke="var(--line)" stroke-width="2"/><circle cx="7" cy="7" r="${r}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="${(pct * c).toFixed(2)} ${c.toFixed(2)}" transform="rotate(-90 7 7)" stroke-linecap="round"/></svg>`;
+  }
+  const icon = {
+    all: '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 3.5h10M2 7h10M2 10.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    overview: '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 5h5M4.5 7.2h5M4.5 9.4h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>',
+    decisions: '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.8 12.2 7 7 12.2 1.8 7Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+  };
+
+  /* Derived data */
+  const projectOf = (id) => state.projects.find((p) => p.id === id);
+  function progress(pid) {
+    const list = state.issues.filter((i) => i.project === pid && i.status !== 'canceled');
+    const done = list.filter((i) => i.status === 'done').length;
+    return { done, total: list.length, pct: list.length ? done / list.length : 0 };
+  }
+  function visibleIssues() {
+    let list = state.issues;
+    if (state.view === 'active') list = list.filter((i) => ['todo', 'in_progress', 'in_review'].includes(i.status));
+    else if (state.view === 'backlog') list = list.filter((i) => i.status === 'backlog');
+    else if (state.view === 'done') list = list.filter((i) => i.status === 'done' || i.status === 'canceled');
+    else if (state.view.startsWith('project:')) list = list.filter((i) => i.project === state.view.slice(8));
+    const q = state.query.trim().toLowerCase();
+    if (q) list = list.filter((i) => [i.key, i.title, i.summary, ...(i.labels || [])].join(' ').toLowerCase().includes(q));
+    return list;
+  }
+
+  /* Sidebar */
+  function renderSide() {
+    const n = (f) => state.issues.filter(f).length;
+    const openDecisions = state.decisions.filter((d) => !d.chosen).length;
+    const item = (view, label, ico, count) =>
+      `<button class="nav-item" data-view="${view}" aria-current="${state.view === view}">${ico}<span>${esc(label)}</span>${count != null ? `<span class="count">${count}</span>` : ''}</button>`;
+    $('side').innerHTML = `
+      <div class="ws"><div class="ws-mark">K</div><div><div class="ws-name">Kept</div><div class="ws-sub">Backend roadmap</div></div></div>
+      <div class="nav-group">
+        ${item('overview', 'Overview', icon.overview)}
+        ${item('decisions', 'Decisions', icon.decisions, state.loaded ? openDecisions || null : null)}
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Issues</div>
+        ${item('all', 'All issues', icon.all, state.loaded ? state.issues.length : null)}
+        ${item('active', 'Active', statusIcon('in_progress'), state.loaded ? n((i) => ['todo', 'in_progress', 'in_review'].includes(i.status)) : null)}
+        ${item('backlog', 'Backlog', statusIcon('backlog'), state.loaded ? n((i) => i.status === 'backlog') : null)}
+        ${item('done', 'Done', statusIcon('done'), state.loaded ? n((i) => i.status === 'done') : null)}
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Phases</div>
+        ${state.projects.slice().sort(byOrder).map((p) => {
+          const pr = progress(p.id);
+          return item('project:' + p.id, p.name, ring(pr.pct), null);
+        }).join('')}
+      </div>`;
+  }
+
+  /* Top bar */
+  function renderBar() {
+    let title = 'All issues', crumb = '';
+    if (state.view === 'active') title = 'Active';
+    if (state.view === 'backlog') title = 'Backlog';
+    if (state.view === 'done') title = 'Done';
+    if (state.view === 'overview') title = 'Overview';
+    if (state.view === 'decisions') title = 'Decisions';
+    if (state.view.startsWith('project:')) { crumb = 'Phases'; title = projectOf(state.view.slice(8))?.name || 'Phase'; }
+    const isList = !['overview', 'decisions'].includes(state.view);
+    $('bar').innerHTML = `
+      ${crumb ? `<span class="crumb">${esc(crumb)} ›</span>` : ''}<h1>${esc(title)}</h1>
+      <span class="spacer"></span>
+      ${isList ? `
+        <div class="seg" role="group" aria-label="Group by">
+          <button data-group="status" aria-pressed="${state.group === 'status'}">Status</button>
+          <button data-group="project" aria-pressed="${state.group === 'project'}">Phase</button>
+        </div>
+        <input class="search" id="search" type="search" placeholder="Filter issues" value="${esc(state.query)}" aria-label="Filter issues">` : ''}`;
+  }
+
+  /* Views */
+  function rowHtml(i) {
+    const p = projectOf(i.project);
+    const labels = (i.labels || []).slice(0, 2).map((l) => `<span class="chip"><i style="background:${LABEL_COLORS[l] || 'var(--ink-3)'}"></i>${esc(l)}</span>`).join('');
+    return `<button class="row" data-key="${esc(i.key)}" aria-selected="${state.open === i.key}">
+      ${priorityIcon(i.priority)}
+      <span class="key">${esc(i.key)}</span>
+      ${statusIcon(i.status)}
+      <span class="title">${esc(i.title)}</span>
+      <span class="chips">${labels}</span>
+      <span class="proj">${p ? ring(progress(p.id).pct, 12) + esc(p.short || p.name) : ''}</span>
+      <span class="est">${i.estimate ? i.estimate + ' pt' : ''}</span>
+    </button>`;
+  }
+  function renderList() {
+    if (!state.loaded) return Array.from({ length: 9 }, () => '<div class="skeleton"></div>').join('');
+    const list = visibleIssues().slice().sort((a, b) => (a.priority || 9) - (b.priority || 9) || issueNum(a.key) - issueNum(b.key));
+    if (!list.length) return `<div class="empty">${state.query ? `No issues match “${esc(state.query)}”.` : 'Nothing here yet.'}</div>`;
+    const groups = state.group === 'status'
+      ? STATUSES.map((s) => ({ head: statusIcon(s.id) + esc(s.label), items: list.filter((i) => i.status === s.id) }))
+      : state.projects.slice().sort(byOrder).map((p) => ({ head: ring(progress(p.id).pct) + esc(p.name), items: list.filter((i) => i.project === p.id) }));
+    return groups.filter((g) => g.items.length).map((g) =>
+      `<div class="group-head">${g.head}<span class="count">${g.items.length}</span></div>${g.items.map(rowHtml).join('')}`).join('');
+  }
+
+  const SEAM = [
+    ['session.ts', 'getSession()', 'Cached Supabase session + AAL, read synchronously after boot', 'KEPT-13'],
+    ['session.ts', 'signInWithPassword(username, password)', 'Edge Function `sign-in` → `auth.setSession()`', 'KEPT-12'],
+    ['session.ts', 'completeMfaForLab()', 'Replaced by TOTP enroll / verify', 'KEPT-15'],
+    ['session.ts', 'signOut()', '`auth.signOut()`', 'KEPT-13'],
+    ['repository.ts', 'listCollections() · getCollection(id)', '`collection_summaries` view, slug as the id', 'KEPT-18'],
+    ['repository.ts', 'createCollection(name) · updateCollection(id, patch)', 'RPC `create_collection` · update on `collections`', 'KEPT-18'],
+    ['repository.ts', 'listReferences(id) · listAllReferences()', 'One nested select + batched signed URLs', 'KEPT-19'],
+    ['repository.ts', 'updateReference(cid, rid, patch)', 'Notes update; RPCs `set_reference_tags`, `set_reference_pins`', 'KEPT-20'],
+    ['repository.ts', 'addUploads(cid, files, onProgress)', 'On-device resize → rows → Storage uploads', 'KEPT-21'],
+    ['repository.ts', 'getShare · publishCollection · rotateShare · unpublishCollection', '`collection_shares` + token RPCs', 'KEPT-23'],
+    ['repository.ts', 'getBoard(token)', 'Edge Function `board` (no sign-in)', 'KEPT-24'],
+    ['repository.ts', 'requestInvite(request)', 'RPC `request_invite` (anon)', 'KEPT-26'],
+  ];
+  const keyLink = (k) => `<button class="link-btn" data-key="${k}">${k}</button>`;
+
+  function renderOverview() {
+    const phases = state.projects.slice().sort(byOrder);
+    const total = state.issues.filter((i) => i.status !== 'canceled');
+    const done = total.filter((i) => i.status === 'done').length;
+    return `<div class="doc">
+      <section>
+        <h2>Wire Kept to a real backend</h2>
+        <p class="lede">The UI is finished: kept-design matches the kept-ui lab pixel for pixel, but every screen still reads from browser mocks. This roadmap replaces those mocks with Supabase (Postgres, Auth, Storage and two Edge Functions) behind the exact functions the screens already call, so no screen changes.</p>
+      </section>
+      <section>
+        <h3>Where things stand</h3>
+        <dl class="kv">
+          <dt>UI</dt><dd>Done. All 16 routes and their states are pixel-identical to kept-ui (commit <code>7e9ddba</code>).</dd>
+          <dt>Main branch</dt><dd>PR #4 is open against <code>main</code> and needs merging first (${keyLink('KEPT-1')}).</dd>
+          <dt>Data</dt><dd>Mocked in <code>src/kept/repository.ts</code> and <code>session.ts</code>: localStorage, sessionStorage and IndexedDB, all device-local.</dd>
+          <dt>Stack call</dt><dd>From the v0 spec: Vite + React + Base UI, Supabase for data, sign-in and files. No Next.js.</dd>
+          <dt>Progress</dt><dd>${state.loaded ? `${done} of ${total.length} issues done` : '—'}</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>How it fits together</h3>
+<pre class="diagram">Browser · kept.design (Vite SPA, same screens as kept-ui)
+│
+├── supabase-js  (publishable key, user JWT)
+│     ├── Auth      password + TOTP → AAL2; signup off
+│     ├── Postgres  RLS on every table: owner_id = auth.uid() AND aal2
+│     └── Storage   private bucket kept-assets/&lt;owner&gt;/&lt;ref&gt;/{full,thumb}.jpg
+│
+├── Edge Function  sign-in   username → email, then password sign-in
+└── Edge Function  board     /m/:token → rows + short-lived signed image URLs
+                             (the only path that works signed out)</pre>
+      </section>
+      <section>
+        <h3>The seam: what each UI function becomes</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>File</th><th>Function</th><th>Backed by</th><th>Issue</th></tr></thead>
+          <tbody>${SEAM.map(([f, fn, how, k]) => `<tr><td><code>${f}</code></td><td>${fmt(fn)}</td><td>${fmt(how)}</td><td>${keyLink(k)}</td></tr>`).join('')}</tbody>
+        </table></div>
+      </section>
+      <section>
+        <h3>Ground rules</h3>
+        <ul class="plain">
+          <li>kept-ui stays the source of truth and is never written to. New screens (two-factor, later box annotations and renaming) are designed there first, then synced.</li>
+          <li><code>npm run sync-kept-ui</code> must never overwrite the real data layer again (${keyLink('KEPT-6')}).</li>
+          <li>Same function names and return shapes. If kept-ui changes a shape, the typecheck fails before anything ships.</li>
+          <li>Only the publishable key reaches the browser. The service-role key lives in Edge Function secrets and a local seed script, never behind a <code>VITE_</code> prefix.</li>
+          <li>Without Supabase env vars the app falls back to the mocks, so previews and the lab flow keep working.</li>
+          <li>The pixel sweep is re-run once real data flows: the UI must still match kept-ui.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Phases</h3>
+        <div class="cards">${phases.map((p) => {
+          const pr = progress(p.id);
+          return `<button class="card" data-view="project:${p.id}">
+            <div class="card-head">${ring(pr.pct)}${esc(p.name)}</div>
+            <p>${esc(p.summary)}</p>
+            <div class="meter"><span style="width:${Math.round(pr.pct * 100)}%"></span></div>
+            <div class="card-foot"><span>${pr.done} / ${pr.total} done</span><span>${esc(p.target || '')}</span></div>
+          </button>`;
+        }).join('') || '<div class="skeleton"></div>'}</div>
+      </section>
+    </div>`;
+  }
+
+  function renderDecisions() {
+    if (!state.loaded) return '<div class="doc"><div class="skeleton"></div><div class="skeleton"></div></div>';
+    const list = state.decisions.slice().sort(byOrder);
+    return `<div class="doc">
+      <section><h2>Decisions</h2><p>Calls that shape the build. Each has a recommendation; pick one and it's saved here for both of us.</p></section>
+      ${list.map((d) => `<section class="decision" data-decision="${esc(d.id)}">
+        <div class="decision-head"><span class="key">${esc(d.key || '')}</span><h3>${esc(d.title)}</h3>
+          <span class="badge ${d.chosen ? 'decided' : 'open'}">${d.chosen ? 'Decided' : 'Open'}</span></div>
+        <p>${fmt(d.question)}</p>
+        <div class="options" role="radiogroup" aria-label="${esc(d.title)}">
+          ${(d.options || []).map((o) => `<button class="option" role="radio" aria-checked="${d.chosen === o.id}" data-choose="${esc(o.id)}" ${state.writable ? '' : 'disabled'}>
+            <span class="dot"></span><span><b>${esc(o.label)}</b>${d.recommended === o.id ? '<span class="rec">Recommended</span>' : ''}<small>${fmt(o.detail)}</small></span>
+          </button>`).join('')}
+        </div>
+      </section>`).join('')}
+    </div>`;
+  }
+
+  function renderView() {
+    const v = $('view');
+    if (state.view === 'overview') v.innerHTML = renderOverview();
+    else if (state.view === 'decisions') v.innerHTML = renderDecisions();
+    else v.innerHTML = renderList();
+  }
+
+  /* Detail panel */
+  function renderPanel() {
+    const o = $('overlay');
+    const i = state.issues.find((x) => x.key === state.open);
+    if (!i) { o.innerHTML = ''; return; }
+    const p = projectOf(i.project);
+    const blocks = (i.blockedBy || []).map((k) => {
+      const b = state.issues.find((x) => x.key === k);
+      return `<span class="chip">${b ? statusIcon(b.status, 12) : ''}${keyLink(k)}</span>`;
+    }).join('') || '<span class="ws-sub">None</span>';
+    const blocking = state.issues.filter((x) => (x.blockedBy || []).includes(i.key)).map((x) => `<span class="chip">${statusIcon(x.status, 12)}${keyLink(x.key)}</span>`).join('') || '<span class="ws-sub">None</span>';
+    const dis = state.writable && state.dbOk && !state.static ? '' : 'disabled';
+    o.innerHTML = `<div class="scrim" data-close></div>
+      <aside class="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title">
+        <div class="panel-top"><span class="key">${esc(i.key)}</span><span class="ws-sub">${esc(p?.name || '')}</span><span class="spacer"></span><button class="icon-btn" data-close aria-label="Close">Close</button></div>
+        <div class="panel-body">
+          <h2 id="panel-title">${esc(i.title)}</h2>
+          <dl class="props">
+            <dt>Status</dt><dd>${statusIcon(i.status)}<select class="select" id="f-status" ${dis}>${STATUSES.map((s) => `<option value="${s.id}" ${s.id === i.status ? 'selected' : ''}>${s.label}</option>`).join('')}</select></dd>
+            <dt>Priority</dt><dd>${priorityIcon(i.priority)}<select class="select" id="f-priority" ${dis}>${PRIORITIES.map((x) => `<option value="${x.id}" ${x.id === (i.priority || 0) ? 'selected' : ''}>${x.label}</option>`).join('')}</select></dd>
+            <dt>Estimate</dt><dd>${i.estimate ? i.estimate + ' points' : '<span class="ws-sub">None</span>'}</dd>
+            <dt>Labels</dt><dd>${(i.labels || []).map((l) => `<span class="chip"><i style="background:${LABEL_COLORS[l] || 'var(--ink-3)'}"></i>${esc(l)}</span>`).join('') || '<span class="ws-sub">None</span>'}</dd>
+            <dt>Blocked by</dt><dd>${blocks}</dd>
+            <dt>Blocks</dt><dd>${blocking}</dd>
+          </dl>
+          ${i.summary ? `<div class="section"><h3>Why</h3><p>${fmt(i.summary)}</p></div>` : ''}
+          ${i.steps?.length ? `<div class="section"><h3>Approach</h3><ol>${i.steps.map((s) => `<li>${fmt(s)}</li>`).join('')}</ol></div>` : ''}
+          ${i.code ? `<div class="section"><h3>Sketch</h3><pre>${esc(i.code)}</pre></div>` : ''}
+          ${i.acceptance?.length ? `<div class="section"><h3>Done when</h3><ul class="checks">${i.acceptance.map((s) => `<li><span>${fmt(s)}</span></li>`).join('')}</ul></div>` : ''}
+          ${i.notes ? `<div class="section"><h3>Notes</h3><p>${fmt(i.notes)}</p></div>` : ''}
+        </div>
+      </aside>`;
+    o.querySelector('.panel .icon-btn')?.focus({ preventScroll: true });
+  }
+
+  function render() {
+    renderSide(); renderBar(); renderView(); renderPanel();
+    const note = $('note');
+    if (state.static) { note.hidden = false; note.innerHTML = 'Static copy from the repo. To change it, edit <code>docs/roadmap/roadmap.json</code>, then run <code>node scripts/roadmap.mjs</code>.'; }
+    else if (state.dbOk === false) { note.hidden = false; note.textContent = 'The roadmap data isn’t available in this view. Open the page on claude.ai to see and update it.'; }
+    else if (state.dbOk && !state.writable && !state.static) { note.hidden = false; note.textContent = 'You can view this roadmap but not change it.'; }
+    else note.hidden = true;
+  }
+
+  function toast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 1800);
+  }
+
+  /* Events */
+  document.addEventListener('click', (e) => {
+    const view = e.target.closest('[data-view]');
+    if (view) { state.view = view.dataset.view; state.query = ''; savePrefs(); render(); $('view').scrollTop = 0; return; }
+    const group = e.target.closest('[data-group]');
+    if (group) { state.group = group.dataset.group; savePrefs(); render(); return; }
+    const key = e.target.closest('[data-key]');
+    if (key) { state.open = key.dataset.key; render(); return; }
+    if (e.target.closest('[data-close]')) { state.open = null; render(); return; }
+    const choose = e.target.closest('[data-choose]');
+    if (choose && !choose.disabled) {
+      const id = choose.closest('[data-decision]').dataset.decision;
+      const d = state.decisions.find((x) => x.id === id);
+      const chosen = d.chosen === choose.dataset.choose ? null : choose.dataset.choose;
+      write('decisions/' + id, { chosen }, chosen ? 'Decision saved' : 'Decision reopened');
+    }
+  });
+  document.addEventListener('input', (e) => {
+    if (e.target.id === 'search') {
+      state.query = e.target.value;
+      renderView(); renderSide();
+    }
+  });
+  document.addEventListener('change', (e) => {
+    const i = state.issues.find((x) => x.key === state.open);
+    if (!i) return;
+    if (e.target.id === 'f-status') write('issues/' + i.key, { status: e.target.value, updatedAt: new Date().toISOString() }, 'Status updated');
+    if (e.target.id === 'f-priority') write('issues/' + i.key, { priority: Number(e.target.value), updatedAt: new Date().toISOString() }, 'Priority updated');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state.open) { state.open = null; render(); }
+    if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && $('search')) { e.preventDefault(); $('search').focus(); }
+  });
+
+  /* Data */
+  let db = null;
+  async function write(path, patch, msg) {
+    if (!db) return;
+    try { await db.doc(path).update(patch); toast(msg); }
+    catch (err) {
+      if (err?.code === 'invalid_argument') { state.writable = false; render(); toast('You can’t change this roadmap.'); }
+      else toast('Couldn’t save. Try again.');
+    }
+  }
+  function listen(name, key) {
+    db.collection(name).onSnapshot((snap) => {
+      state[key] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      state.loaded = true;
+      const search = $('search');
+      const had = document.activeElement === search;
+      const pos = had ? search.selectionStart : 0;
+      render();
+      if (had && $('search')) { $('search').focus(); $('search').setSelectionRange(pos, pos); }
+    }, () => { state.dbOk = false; render(); });
+  }
+
+  render();
+  (async () => {
+    db = window.claude?.use ? await window.claude.use('db') : null;
+    // The repo copy (docs/roadmap/index.html) embeds its data instead of using the live store.
+    const embedded = document.getElementById('roadmap-data');
+    if (!db && embedded) {
+      const data = JSON.parse(embedded.textContent);
+      Object.assign(state, { projects: data.projects, decisions: data.decisions, issues: data.issues, loaded: true, dbOk: true, writable: false, static: true });
+      render();
+      return;
+    }
+    if (!db) { state.dbOk = false; state.loaded = true; render(); return; }
+    state.dbOk = true;
+    listen('projects', 'projects');
+    listen('decisions', 'decisions');
+    listen('issues', 'issues');
+  })();
+})();
+</script>

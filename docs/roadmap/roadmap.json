@@ -1,0 +1,1059 @@
+{
+  "projects": [
+    {
+      "id": "p0",
+      "name": "Ground work",
+      "order": 0,
+      "short": "Ground work",
+      "summary": "Get PR #4 onto main, settle the open calls, and protect the data layer from the sync script.",
+      "target": "Before any backend code"
+    },
+    {
+      "id": "p1",
+      "name": "Supabase foundation",
+      "order": 1,
+      "short": "Foundation",
+      "summary": "Project, migrations, row-level security enforcing owner + two-factor, a private image bucket, generated types.",
+      "target": "Schema, RLS, Storage"
+    },
+    {
+      "id": "p2",
+      "name": "Sign-in and two-factor",
+      "order": 2,
+      "short": "Sign-in",
+      "summary": "Username sign-in through an Edge Function, a real session behind the synchronous getSession(), and TOTP.",
+      "target": "Real accounts"
+    },
+    {
+      "id": "p3",
+      "name": "Library data",
+      "order": 3,
+      "short": "Library",
+      "summary": "Collections, references, notes, tags, pins and uploads move from browser storage to Postgres and Storage.",
+      "target": "Same functions, real rows"
+    },
+    {
+      "id": "p4",
+      "name": "Boards",
+      "order": 4,
+      "short": "Boards",
+      "summary": "Publish, rotate and unpublish in Postgres; a signed-out Edge Function serves boards with short-lived image URLs.",
+      "target": "/m/:token for real"
+    },
+    {
+      "id": "p5",
+      "name": "Invites",
+      "order": 5,
+      "short": "Invites",
+      "summary": "Invite requests stored server-side, deduplicated by email, with a notification to you.",
+      "target": "Requests reach you"
+    },
+    {
+      "id": "p6",
+      "name": "Move in and ship",
+      "order": 6,
+      "short": "Ship",
+      "summary": "Seed moode-matcha into Storage, set env and secrets, re-verify pixel parity and RLS, deploy.",
+      "target": "kept.design"
+    },
+    {
+      "id": "p7",
+      "name": "Later",
+      "order": 7,
+      "short": "Later",
+      "summary": "Worth doing, not needed for v0: box annotations, renaming, server search, share previews.",
+      "target": "After v0"
+    }
+  ],
+  "decisions": [
+    {
+      "chosen": null,
+      "id": "d1",
+      "key": "D-1",
+      "options": [
+        {
+          "detail": "The browser sends username + password to a function that looks up the email with the service role and signs in server-side. Emails never leave the server, and an unknown username gives the same error as a wrong password.",
+          "id": "edge",
+          "label": "Edge Function `sign-in`"
+        },
+        {
+          "detail": "Each account's email is `username@users.kept.design`. No server code, but no real inbox for recovery or notices.",
+          "id": "synthetic",
+          "label": "Synthetic emails"
+        },
+        {
+          "detail": "An anon-callable `email_for_username()`. Simplest, but it lets anyone enumerate usernames and read their emails. Not recommended.",
+          "id": "rpc",
+          "label": "Public lookup function"
+        }
+      ],
+      "order": 1,
+      "question": "Kept signs in by username, but Supabase Auth signs in by email. Something has to turn a username into an email without letting anyone look up whose account is whose.",
+      "recommended": "edge",
+      "title": "How usernames sign in"
+    },
+    {
+      "chosen": null,
+      "id": "d2",
+      "key": "D-2",
+      "options": [
+        {
+          "detail": "The function checks the token and returns URLs that expire (about an hour). Unpublish and New link take effect immediately for new visits. One bucket, nothing public.",
+          "id": "signed",
+          "label": "Signed URLs from the `board` function"
+        },
+        {
+          "detail": "Publishing copies files into a public bucket. Links never expire and CDN caching is simpler, but every publish, rotate and unpublish has to copy or delete files.",
+          "id": "public",
+          "label": "Public copies of published images"
+        }
+      ],
+      "order": 2,
+      "question": "Library images stay in a private bucket. Boards are opened by people who aren't signed in, so their images need a different path.",
+      "recommended": "signed",
+      "title": "How board images are served"
+    },
+    {
+      "chosen": null,
+      "id": "d3",
+      "key": "D-3",
+      "options": [
+        {
+          "detail": "Billed through Vercel; env vars sync to Production, Preview and Development automatically. Vite only exposes `VITE_`-prefixed vars, so `vite.config` adds the integration's `NEXT_PUBLIC_SUPABASE_` prefix to `envPrefix`.",
+          "id": "marketplace",
+          "label": "Vercel Marketplace integration"
+        },
+        {
+          "detail": "Billed by Supabase; env vars are copied into Vercel by hand. Nothing else changes.",
+          "id": "direct",
+          "label": "supabase.com directly"
+        }
+      ],
+      "order": 3,
+      "question": "Supabase can be created directly on supabase.com or through the Vercel Marketplace integration.",
+      "recommended": "marketplace",
+      "title": "Where Supabase is provisioned"
+    },
+    {
+      "chosen": null,
+      "id": "d4",
+      "key": "D-4",
+      "options": [
+        {
+          "detail": "`repository.ts` picks the Supabase implementation when configured, else the synced mock. The lab account `wade / 1234` keeps working locally. This matches the v0 spec.",
+          "id": "fallback",
+          "label": "Fall back to the mocks"
+        },
+        {
+          "detail": "Simpler code paths, but every preview and fresh clone needs real credentials.",
+          "id": "strict",
+          "label": "Require Supabase everywhere"
+        }
+      ],
+      "order": 4,
+      "question": "When Supabase env vars are missing (a fresh clone, a preview without secrets), the app can either fall back to kept-ui's mocks or refuse to start.",
+      "recommended": "fallback",
+      "title": "Keep the mocks as a fallback"
+    },
+    {
+      "chosen": null,
+      "id": "d5",
+      "key": "D-5",
+      "options": [
+        {
+          "detail": "Delete `public/collections/` from main once KEPT-28 has moved them into Storage. They stay in git history, but the app stops depending on them.",
+          "id": "remove",
+          "label": "Remove them after the seed"
+        },
+        {
+          "detail": "Useful for the mock fallback on previews. Costs repo size and keeps the images public.",
+          "id": "keep",
+          "label": "Keep them in the repo"
+        }
+      ],
+      "order": 5,
+      "question": "PR #3 already committed the 320 moode-matcha files to main (the repo is public). Once they're in Storage, the copies in `public/collections/` aren't needed.",
+      "recommended": "remove",
+      "title": "Collection images in git"
+    }
+  ],
+  "issues": [
+    {
+      "acceptance": [
+        "All 16 routes identical to kept-ui.vercel.app",
+        "Interactive states identical (dialogs, menus, search, lightbox, keyboard stepping, sign-in redirects)"
+      ],
+      "blockedBy": [],
+      "estimate": 8,
+      "key": "KEPT-0",
+      "labels": [
+        "ui"
+      ],
+      "notes": "Commits `969134d` and `7e9ddba` on `cursor/snapshot-kept-ui-a2a8`, open as PR #4.",
+      "priority": 2,
+      "project": "p0",
+      "status": "done",
+      "steps": [
+        "Synced `src/kept` with `scripts/sync-kept-ui.mjs`, which rewrites `#/kept/...` routes into paths.",
+        "Added `navigate.ts` and a `useSyncExternalStore` router so links don't reload and redirects aren't missed.",
+        "Removed the legacy home and map pages; matched kept-ui's dependency versions; added a typecheck to the build."
+      ],
+      "summary": "Every screen and state from the kept-ui lab now runs on real paths in kept-design, pixel-identical at 1440px and 390px in light and dark.",
+      "title": "Recreate the kept-ui UI in kept-design"
+    },
+    {
+      "acceptance": [
+        "main contains `7e9ddba`'s tree plus the images",
+        "`npm run build` passes on main",
+        "Vercel production shows the kept-ui landing"
+      ],
+      "blockedBy": [],
+      "estimate": 1,
+      "key": "KEPT-1",
+      "labels": [
+        "ops"
+      ],
+      "notes": "An automated merge was blocked by the permission check last session, so this needs your go-ahead or a merge on GitHub.",
+      "priority": 1,
+      "project": "p0",
+      "status": "todo",
+      "steps": [
+        "Merge PR #4, resolving conflicts in favour of #4 (it's a superset of #3 and verified).",
+        "Keep #3's committed `public/collections/` images and drop #4's `.gitignore` line for them, so production has images until Storage takes over.",
+        "Build, then check the Vercel preview renders `/`, `/library`, and `/m/mm7q2x9kfa`."
+      ],
+      "summary": "The UI work lives on a branch. Main still has PR #3, an older snapshot of the same screens with the legacy home and map pages. Everything else builds on main.",
+      "title": "Merge PR #4 into main"
+    },
+    {
+      "acceptance": [
+        "D-1 marked decided"
+      ],
+      "blockedBy": [],
+      "estimate": 1,
+      "key": "KEPT-2",
+      "labels": [
+        "decision",
+        "auth"
+      ],
+      "priority": 2,
+      "project": "p0",
+      "status": "todo",
+      "steps": [],
+      "summary": "Blocks the whole sign-in phase. See Decisions → D-1; the recommendation is an Edge Function so emails never reach the browser.",
+      "title": "Decide how usernames sign in (D-1)"
+    },
+    {
+      "acceptance": [
+        "D-2 marked decided"
+      ],
+      "blockedBy": [],
+      "estimate": 1,
+      "key": "KEPT-3",
+      "labels": [
+        "decision",
+        "storage"
+      ],
+      "priority": 2,
+      "project": "p0",
+      "status": "todo",
+      "steps": [],
+      "summary": "Shapes the storage policies and the board function. See Decisions → D-2.",
+      "title": "Decide how board images are served (D-2)"
+    },
+    {
+      "acceptance": [
+        "D-3 marked decided"
+      ],
+      "blockedBy": [],
+      "estimate": 1,
+      "key": "KEPT-4",
+      "labels": [
+        "decision",
+        "infra"
+      ],
+      "priority": 2,
+      "project": "p0",
+      "status": "todo",
+      "steps": [],
+      "summary": "Needed before the project exists. See Decisions → D-3.",
+      "title": "Decide where Supabase is provisioned (D-3)"
+    },
+    {
+      "acceptance": [
+        "D-4 marked decided"
+      ],
+      "blockedBy": [],
+      "estimate": 1,
+      "key": "KEPT-5",
+      "labels": [
+        "decision"
+      ],
+      "priority": 3,
+      "project": "p0",
+      "status": "todo",
+      "steps": [],
+      "summary": "Decides how `repository.ts` is structured. See Decisions → D-4.",
+      "title": "Decide on the mock fallback (D-4)"
+    },
+    {
+      "acceptance": [
+        "Running the sync twice leaves `repository.ts` and `session.ts` untouched",
+        "If kept-ui changes a function or type the screens use, `npm run build` fails on the typecheck",
+        "README documents which files are synced, renamed, or owned here"
+      ],
+      "blockedBy": [
+        "KEPT-5"
+      ],
+      "estimate": 2,
+      "key": "KEPT-6",
+      "labels": [
+        "data",
+        "ops"
+      ],
+      "priority": 2,
+      "project": "p0",
+      "status": "todo",
+      "steps": [
+        "Sync kept-ui's `repository.ts` to `repository.mock.ts`, `session.ts` to `session.mock.ts`, and `uploads.ts` to `uploads.mock.ts` (rename on write), rewriting their relative imports.",
+        "kept-design owns `repository.ts` and `session.ts`: they re-export the types from the mocks and pick an implementation (D-4).",
+        "Screens keep importing `./repository.ts`; nothing in the synced screens changes.",
+        "Keep `prepareUpload()` from the mock uploads module: the on-device resize is shared by both implementations."
+      ],
+      "summary": "`npm run sync-kept-ui` copies every file in kept-ui's `src/kept`, including the mock `repository.ts`, `session.ts` and `uploads.ts`. Once those are real, one sync would silently put the mocks back.",
+      "title": "Stop the sync script from overwriting the data layer"
+    },
+    {
+      "acceptance": [
+        "`supabase db push` applies cleanly to an empty project",
+        "Signups are off (a sign-up call is rejected)",
+        "No keys are committed"
+      ],
+      "blockedBy": [
+        "KEPT-4"
+      ],
+      "estimate": 2,
+      "key": "KEPT-7",
+      "labels": [
+        "infra"
+      ],
+      "priority": 2,
+      "project": "p1",
+      "status": "backlog",
+      "steps": [
+        "Create the project (per D-3) in the region closest to you.",
+        "Auth settings: disable signups, keep email confirmations on, set Site URL to `https://kept.design` and add `http://localhost:5173` to redirect URLs.",
+        "`npx supabase init`, `supabase link`, migrations under `supabase/migrations/`.",
+        "Add `.env.example` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`; real values in `.env.local` (git-ignored) and Vercel."
+      ],
+      "summary": "Everything else needs a project, the CLI, and migrations in the repo so the schema is reviewable.",
+      "title": "Create the Supabase project and local setup"
+    },
+    {
+      "acceptance": [
+        "Every field the UI reads maps to a column (see the seam table)",
+        "Slugs unique per owner; tokens and public ids unique globally",
+        "Migration is idempotent against a fresh project"
+      ],
+      "blockedBy": [
+        "KEPT-7"
+      ],
+      "code": "profiles      id uuid pk → auth.users · username citext unique (2–32 [a-z0-9._-])\ncollections   id uuid pk · owner_id · slug text · name text (≤80) · description text\n              created_at · updated_at · unique (owner_id, slug)\nrefs          id uuid pk · public_id text unique · owner_id · collection_id → collections\n              title · notes · capture_url (null = uploaded) · added_at · updated_at\n              search tsvector generated\nassets        id uuid pk · ref_id → refs (cascade) · owner_id · path_full · path_thumb\n              file_name · file_type · width · height · bytes\ntags          id uuid pk · owner_id · name citext · unique (owner_id, name)\nref_tags      ref_id → refs · tag_id → tags · pk (ref_id, tag_id)\nannotations   id uuid pk · ref_id → refs (cascade) · owner_id · kind ('pin'|'box')\n              x · y · w · h (null for pins) · caption · position int\ncollection_shares  collection_id pk → collections (cascade) · token text unique\n                   published_at · rotated_at\ninvite_requests    id uuid pk · name · email citext unique · note (≤500)\n                   requested_at · status ('waiting'|'invited'|'declined')",
+      "estimate": 5,
+      "key": "KEPT-8",
+      "labels": [
+        "db"
+      ],
+      "priority": 1,
+      "project": "p1",
+      "status": "backlog",
+      "steps": [
+        "Write `0001_schema.sql` with the tables below; UUID primary keys, `owner_id` on every row for RLS.",
+        "Collections keep a `slug` because the UI uses it as the collection id in URLs (`/library/moode-matcha`). References keep a short `public_id` for `/library/:c/:r`.",
+        "`references` is a reserved word in SQL, so the table is `refs`.",
+        "Add `updated_at` triggers, and a generated `search` tsvector on refs for later server search (KEPT-34)."
+      ],
+      "summary": "Turns the shapes in `repository.ts` into tables. A Reference is the unit of meaning; its Asset carries the file facts; v0 has one asset and one collection per reference.",
+      "title": "Schema migration"
+    },
+    {
+      "acceptance": [
+        "pgTAP (or SQL) tests: user B can't select, update or delete user A's rows in any table",
+        "An aal1 session reads zero rows",
+        "anon reads zero rows from every table"
+      ],
+      "blockedBy": [
+        "KEPT-8"
+      ],
+      "code": "create policy \"own rows\" on refs for all to authenticated\n  using (owner_id = auth.uid()) with check (owner_id = auth.uid());\ncreate policy \"require mfa\" on refs as restrictive for all to authenticated\n  using ((auth.jwt() ->> 'aal') = 'aal2');",
+      "estimate": 3,
+      "key": "KEPT-9",
+      "labels": [
+        "db",
+        "security"
+      ],
+      "priority": 1,
+      "project": "p1",
+      "status": "backlog",
+      "steps": [
+        "Enable RLS on every table. No policies on `invite_requests` or `collection_shares` for anon.",
+        "One permissive policy per table for select/insert/update/delete: `owner_id = auth.uid()`.",
+        "One restrictive policy per table: `(auth.jwt() ->> 'aal') = 'aal2'`.",
+        "`profiles`: a user reads and updates only their own row; usernames are set by you, not the user.",
+        "Signed-out access goes only through SECURITY DEFINER functions with narrow return shapes (board, invite)."
+      ],
+      "summary": "The browser talks straight to Postgres, so RLS is the whole security model. Checking `aal2` in the policies means a stolen password without the second factor reads nothing.",
+      "title": "Row-level security: owner and two-factor on every row"
+    },
+    {
+      "acceptance": [
+        "A signed-in user can upload and sign URLs only under their own folder",
+        "Unsigned object URLs return 400/404",
+        "Another user's paths can't be signed"
+      ],
+      "blockedBy": [
+        "KEPT-7",
+        "KEPT-3"
+      ],
+      "estimate": 2,
+      "key": "KEPT-10",
+      "labels": [
+        "storage",
+        "security"
+      ],
+      "priority": 2,
+      "project": "p1",
+      "status": "backlog",
+      "steps": [
+        "Bucket `kept-assets`, private, 10 MB limit, allowed types `image/jpeg`, `image/png`, `image/webp`.",
+        "Object paths `<owner_id>/<ref_id>/full.jpg` and `thumb.jpg`.",
+        "Policies on `storage.objects`: `(storage.foldername(name))[1] = auth.uid()::text` plus aal2, for select, insert, update and delete."
+      ],
+      "summary": "Images replace IndexedDB blobs and `public/collections/`. The upload path already makes a 1600px full and a 480px thumb on the device, so no server-side transforms are needed.",
+      "title": "Private Storage bucket for images"
+    },
+    {
+      "acceptance": [
+        "Typecheck passes with generated types",
+        "App still runs on mocks with no env vars"
+      ],
+      "blockedBy": [
+        "KEPT-8"
+      ],
+      "estimate": 1,
+      "key": "KEPT-11",
+      "labels": [
+        "data"
+      ],
+      "priority": 3,
+      "project": "p1",
+      "status": "backlog",
+      "steps": [
+        "`src/kept/supabase.ts` creates the client from `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY`, or exports `null` when they're missing (D-4).",
+        "`npm run db:types` runs `supabase gen types typescript` into `src/kept/db.types.ts`.",
+        "Add `@supabase/supabase-js` as the only new runtime dependency."
+      ],
+      "summary": "One client module the data layer shares, and types generated from the schema so column typos fail the build.",
+      "title": "Supabase client and generated types"
+    },
+    {
+      "acceptance": [
+        "The existing login error states still render identically",
+        "No response ever contains an email",
+        "10 bad attempts in a minute are refused"
+      ],
+      "blockedBy": [
+        "KEPT-2",
+        "KEPT-9"
+      ],
+      "estimate": 3,
+      "key": "KEPT-12",
+      "labels": [
+        "auth",
+        "edge function",
+        "security"
+      ],
+      "priority": 1,
+      "project": "p2",
+      "status": "backlog",
+      "steps": [
+        "`supabase/functions/sign-in`: POST `{ username, password }`.",
+        "With the service role, find `profiles.username` → user id → `auth.admin.getUserById()` → email.",
+        "Call `signInWithPassword({ email, password })` with an anon client inside the function and return `{ access_token, refresh_token }`.",
+        "Unknown username and wrong password return the same 400 and the same message: “Username or password is incorrect.”",
+        "Basic rate limit per IP and per username (a small table with timestamps is enough for v0).",
+        "Client: `signInWithPassword()` in `session.ts` calls the function, then `supabase.auth.setSession()`."
+      ],
+      "summary": "Implements D-1. The login screen stays exactly as it is: username, password, the same four error messages.",
+      "title": "Username sign-in Edge Function"
+    },
+    {
+      "acceptance": [
+        "Reloading `/library` while signed in never flashes the sign-in page",
+        "Signing out in one tab signs out other tabs",
+        "Token refresh happens without a visible change"
+      ],
+      "blockedBy": [
+        "KEPT-11"
+      ],
+      "estimate": 3,
+      "key": "KEPT-13",
+      "labels": [
+        "auth"
+      ],
+      "priority": 1,
+      "project": "p2",
+      "status": "backlog",
+      "steps": [
+        "In `main.tsx`, before `createRoot().render`, await `session.init()`: `auth.getSession()`, `auth.mfa.getAuthenticatorAssuranceLevel()` (both read the local JWT, so this is fast), and the user's `profiles.username`.",
+        "Keep a module-level cache; update it from `onAuthStateChange` (sign-in, token refresh, sign-out) and notify the router so the gate re-evaluates.",
+        "`getSession()` returns the cache synchronously: `{ username, aal: currentLevel }`.",
+        "`signOut()` calls `auth.signOut()` and clears the cache."
+      ],
+      "summary": "Screens and the auth gate call `getSession()` synchronously and expect `{ username, aal }`. Supabase's session API is async, so the app has to load the session once before the first render and keep a cache.",
+      "title": "Real session behind the synchronous getSession()"
+    },
+    {
+      "acceptance": [
+        "kept-ui has the approved screen and mock functions",
+        "kept-design matches it pixel for pixel after the sync"
+      ],
+      "blockedBy": [],
+      "estimate": 3,
+      "key": "KEPT-14",
+      "labels": [
+        "kept-ui first",
+        "ui"
+      ],
+      "notes": "This is the one issue that touches kept-ui. It's lab work done with your approval, like the other screens, not a change pushed from kept-design.",
+      "priority": 1,
+      "project": "p2",
+      "status": "backlog",
+      "steps": [
+        "In kept-ui, add two states to `/login/mfa`: **Set up** (QR code, the secret as text for manual entry, a six-digit field) and **Verify** (a six-digit field only).",
+        "Add mock functions to kept-ui's `session.ts` that the screen calls, e.g. `getMfaStatus()`, `startTotpEnrollment()`, `verifyTotp(code)`. These become the seam.",
+        "Errors in the existing style: “Enter the six-digit code.”, “That code didn’t work. Try the newest one.”",
+        "Approve it in the lab, then `npm run sync-kept-ui`."
+      ],
+      "summary": "`/login/mfa` is a placeholder in both projects. kept-ui is the source of truth, so the real screen is designed and approved there (with a mock) before kept-design wires it.",
+      "title": "Design the two-factor screen in kept-ui"
+    },
+    {
+      "acceptance": [
+        "Fresh account: sign in → set up → library",
+        "Next sign-in asks only for the code",
+        "An aal1 session can't read data even by calling the API directly (KEPT-9)"
+      ],
+      "blockedBy": [
+        "KEPT-13",
+        "KEPT-14"
+      ],
+      "estimate": 3,
+      "key": "KEPT-15",
+      "labels": [
+        "auth",
+        "security"
+      ],
+      "priority": 1,
+      "project": "p2",
+      "status": "backlog",
+      "steps": [
+        "`startTotpEnrollment()` → `auth.mfa.enroll({ factorType: 'totp' })`, returning the QR SVG and secret.",
+        "`verifyTotp(code)` → `auth.mfa.challenge()` then `auth.mfa.verify()`; on success refresh the session cache to aal2.",
+        "The gate already sends aal1 sessions to `/login/mfa`; the screen shows Set up when no factor is verified, else Verify.",
+        "Recovery: Supabase has no backup codes. Enroll a second TOTP factor (another device or a password manager) and document the dashboard reset as the last resort."
+      ],
+      "summary": "Makes the aal2 requirement real. Supabase's MFA API does enroll → challenge → verify and upgrades the session to aal2.",
+      "title": "Wire TOTP enrollment and challenge"
+    },
+    {
+      "acceptance": [
+        "You can sign in as `wade` with a real password and TOTP",
+        "The lab password `1234` no longer works outside the mock fallback"
+      ],
+      "blockedBy": [
+        "KEPT-12",
+        "KEPT-15"
+      ],
+      "estimate": 1,
+      "key": "KEPT-16",
+      "labels": [
+        "auth",
+        "ops"
+      ],
+      "priority": 2,
+      "project": "p2",
+      "status": "backlog",
+      "steps": [
+        "Dashboard → Authentication → Add user: your real email, a strong password, auto-confirm.",
+        "Insert the profile: `insert into profiles (id, username) values ('<user id>', 'wade');`",
+        "Sign in, enroll TOTP, and confirm the library loads (empty until KEPT-28)."
+      ],
+      "summary": "Signups are off and Kept is invite-only, so accounts are made in the dashboard. This is also the procedure for approving invites.",
+      "title": "Create your account by hand"
+    },
+    {
+      "acceptance": [
+        "With no env vars the app behaves exactly like today",
+        "With env vars every function hits Supabase",
+        "No screen file changes"
+      ],
+      "blockedBy": [
+        "KEPT-6",
+        "KEPT-11"
+      ],
+      "estimate": 2,
+      "key": "KEPT-17",
+      "labels": [
+        "data"
+      ],
+      "priority": 2,
+      "project": "p3",
+      "status": "backlog",
+      "steps": [
+        "`repository.ts`: `export * from types`, then each function delegates to `supabaseRepository` when the client exists, else to `repository.mock.ts`.",
+        "`repository.supabase.ts` holds the real implementations, one per exported function, with identical signatures.",
+        "Shared helpers: slug ↔ uuid map for collections, public_id ↔ uuid for refs, signed-URL cache."
+      ],
+      "summary": "Implements D-4 and KEPT-6's split. Screens import one module; it routes each call to Supabase or the mock.",
+      "title": "Repository adapter structure"
+    },
+    {
+      "acceptance": [
+        "Library count line and tiles match the mock for the same data",
+        "Creating “Type specimens” twice gives `type-specimens` and `type-specimens-2`"
+      ],
+      "blockedBy": [
+        "KEPT-17"
+      ],
+      "estimate": 3,
+      "key": "KEPT-18",
+      "labels": [
+        "data",
+        "db"
+      ],
+      "priority": 2,
+      "project": "p3",
+      "status": "backlog",
+      "steps": [
+        "View `collection_summaries`: collection columns + `count(refs)` + the four newest thumb paths.",
+        "`listCollections()` selects the view, signs cover paths in one batch, maps `slug` to `id`.",
+        "`getCollection(id)` by slug.",
+        "`createCollection(name)` calls RPC `create_collection(name)`, which makes a unique slug per owner in SQL (no race between two tabs).",
+        "`updateCollection(id, { description })` updates by slug."
+      ],
+      "summary": "The library home needs names, counts, updated dates, descriptions and up to four cover thumbnails per collection.",
+      "title": "Collections: list, get, create, describe"
+    },
+    {
+      "acceptance": [
+        "The moode-matcha grid loads with images in one round trip plus two signing calls",
+        "Reference page ← → still steps through the same order",
+        "Search still finds titles, tags, notes, source, file names and pin captions (it runs on the loaded list)"
+      ],
+      "blockedBy": [
+        "KEPT-17",
+        "KEPT-10"
+      ],
+      "estimate": 5,
+      "key": "KEPT-19",
+      "labels": [
+        "data",
+        "storage"
+      ],
+      "priority": 1,
+      "project": "p3",
+      "status": "backlog",
+      "steps": [
+        "One query: `refs` with nested `assets`, `ref_tags(tags(name))` and `annotations`, ordered newest first.",
+        "Map rows to `Reference`: `id` = public_id, `collectionId` = slug, pins from annotations of kind pin (normalized x/y + caption).",
+        "Sign thumbs and fulls with `storage.createSignedUrls()` in one call per 100 paths; cache by path until 5 minutes before expiry.",
+        "`listAllReferences()` runs the same query without the collection filter."
+      ],
+      "summary": "The collection grid, list, reference page and All references all read `listReferences()`. It must return complete `Reference` objects, image URLs included, fast enough for 160+ items.",
+      "title": "References: list with signed image URLs"
+    },
+    {
+      "acceptance": [
+        "Edits survive reload and show up on another device",
+        "Two quick tag edits never leave a half-applied state"
+      ],
+      "blockedBy": [
+        "KEPT-19"
+      ],
+      "estimate": 3,
+      "key": "KEPT-20",
+      "labels": [
+        "data",
+        "db"
+      ],
+      "priority": 2,
+      "project": "p3",
+      "status": "backlog",
+      "steps": [
+        "`notes`: update `refs.notes`.",
+        "`tags`: RPC `set_ref_tags(ref, names text[])` upserts tag names (case-insensitive, like the UI's duplicate rule) and replaces `ref_tags` in one transaction.",
+        "`pins`: RPC `set_ref_pins(ref, pins jsonb)` replaces the ref's pin annotations in one transaction, keeping order.",
+        "Coalesce rapid edits (typing notes, dragging a caption) into one write per pause, as the mock's localStorage writes never had to."
+      ],
+      "summary": "`updateReference()` takes a partial `{ notes, tags, pins }` and returns the updated reference. Tags and pins are lists that should be replaced atomically.",
+      "title": "Save notes, tags and pins"
+    },
+    {
+      "acceptance": [
+        "Uploading 12 phone photos shows the same progress UI and lands them first in the grid",
+        "A corrupt file fails alone without leaving an orphan row or object",
+        "Nothing is written to IndexedDB any more"
+      ],
+      "blockedBy": [
+        "KEPT-19"
+      ],
+      "estimate": 5,
+      "key": "KEPT-21",
+      "labels": [
+        "data",
+        "storage"
+      ],
+      "priority": 1,
+      "project": "p3",
+      "status": "backlog",
+      "steps": [
+        "Keep `prepareUpload()` (on-device decode, 1600px full, 480px thumb, metadata stripped).",
+        "Per file: RPC `create_ref(collection, title, file facts)` returns ids and paths → upload full and thumb → mark added.",
+        "On failure, delete the rows and any uploaded object, then report `failed` for that file only.",
+        "Bump the collection's `updated_at` once at the end, as the mock does."
+      ],
+      "summary": "The upload dialog's rows (Waiting, Adding…, Added, “Couldn’t read this file”) and its running count stay the same; only where the files go changes.",
+      "title": "Uploads to Storage"
+    },
+    {
+      "acceptance": [
+        "Search behaves identically on real data"
+      ],
+      "blockedBy": [],
+      "estimate": 1,
+      "key": "KEPT-22",
+      "labels": [
+        "data"
+      ],
+      "priority": 4,
+      "project": "p3",
+      "status": "backlog",
+      "steps": [],
+      "summary": "`ReferenceBrowser` filters the loaded list, which is instant at this size. No backend work until a library outgrows it; the tsvector column is already there for KEPT-34.",
+      "title": "Keep search client-side for v0"
+    },
+    {
+      "acceptance": [
+        "The share dialog's copy, New link and Unpublish states render as today",
+        "A rotated token 404s on the next board load"
+      ],
+      "blockedBy": [
+        "KEPT-17"
+      ],
+      "estimate": 2,
+      "key": "KEPT-23",
+      "labels": [
+        "data",
+        "db"
+      ],
+      "priority": 2,
+      "project": "p4",
+      "status": "backlog",
+      "steps": [
+        "`getShare(id)` selects the share by collection.",
+        "RPC `publish_collection(collection)` makes a 10-character base36 token with `gen_random_bytes` (same format as the mock) and returns the share; idempotent.",
+        "RPC `rotate_share(collection)` replaces the token; the old one stops resolving at once.",
+        "`unpublishCollection` deletes the row.",
+        "`Share.owner` comes from the owner's `profiles.username`."
+      ],
+      "summary": "The share dialog's states (not shared, shared with a link, new link, unpublished) move from localStorage to `collection_shares`.",
+      "title": "Publish, rotate and unpublish in Postgres"
+    },
+    {
+      "acceptance": [
+        "The board and lightbox render identically, signed out, on another device",
+        "Unpublish → the next load shows the unavailable state",
+        "The response contains no owner email or ids beyond what the board shows"
+      ],
+      "blockedBy": [
+        "KEPT-23",
+        "KEPT-3"
+      ],
+      "estimate": 3,
+      "key": "KEPT-24",
+      "labels": [
+        "edge function",
+        "storage",
+        "security"
+      ],
+      "priority": 1,
+      "project": "p4",
+      "status": "backlog",
+      "steps": [
+        "`supabase/functions/board`: GET `?token=`; with the service role, find the share → collection → refs with assets, tags and pins.",
+        "Return the `Board` shape (`collection`, `references`, `share`) with signed URLs (about an hour).",
+        "Unknown, rotated or unpublished tokens: 404 → the existing “This board isn't available” state.",
+        "Short `Cache-Control` (a minute) so unpublish takes effect quickly; never cache 404s long.",
+        "`getBoard(token)` calls the function without an auth header."
+      ],
+      "summary": "Implements D-2. `/m/:token` has to work with no session, so it can't go through RLS as a user.",
+      "title": "Board Edge Function for signed-out visitors"
+    },
+    {
+      "acceptance": [
+        "Links copied from production are `https://kept.design/m/…`"
+      ],
+      "blockedBy": [
+        "KEPT-23"
+      ],
+      "estimate": 1,
+      "key": "KEPT-25",
+      "labels": [
+        "ui"
+      ],
+      "priority": 3,
+      "project": "p4",
+      "status": "backlog",
+      "steps": [
+        "Add `VITE_PUBLIC_ORIGIN` (`https://kept.design` in production) and fall back to `window.location.origin`.",
+        "This is a kept-design-only helper; the sync rewrite keeps pointing kept-ui's share URL at it."
+      ],
+      "summary": "`boardAbsoluteUrl()` builds links from the current origin, so preview deployments hand out preview URLs.",
+      "title": "Share links use kept.design"
+    },
+    {
+      "acceptance": [
+        "“You’re on the list.” and “You’re already on the list.” work across devices",
+        "anon still can't select from `invite_requests`"
+      ],
+      "blockedBy": [
+        "KEPT-9"
+      ],
+      "estimate": 2,
+      "key": "KEPT-26",
+      "labels": [
+        "db",
+        "security"
+      ],
+      "priority": 2,
+      "project": "p5",
+      "status": "backlog",
+      "steps": [
+        "RPC `request_invite(name, email, note)`, SECURITY DEFINER, executable by anon: validate lengths and email shape, `insert … on conflict (email) do nothing`, return `{ alreadyRequested }`.",
+        "Honeypot field + a per-IP rate limit to keep bots out; add Turnstile later only if spam shows up.",
+        "`requestInvite()` in the repository calls the RPC."
+      ],
+      "summary": "Today requests live only in the requester's browser, so you never see them. The form, its errors and the two confirmation states stay the same.",
+      "title": "Store invite requests server-side"
+    },
+    {
+      "acceptance": [
+        "A test request reaches your inbox within a minute"
+      ],
+      "blockedBy": [
+        "KEPT-26"
+      ],
+      "estimate": 2,
+      "key": "KEPT-27",
+      "labels": [
+        "edge function",
+        "ops"
+      ],
+      "priority": 3,
+      "project": "p5",
+      "status": "backlog",
+      "steps": [
+        "Database webhook on `invite_requests` insert → Edge Function `notify-invite` → email to you via Resend (or a Slack webhook).",
+        "Approving = KEPT-16's steps for their account, then set `status = 'invited'`."
+      ],
+      "summary": "A request nobody sees is the same as no request.",
+      "title": "Tell you when someone asks for an invite"
+    },
+    {
+      "acceptance": [
+        "Library shows 1 collection, 160 references with images",
+        "`/m/mm7q2x9kfa` works signed out"
+      ],
+      "blockedBy": [
+        "KEPT-21",
+        "KEPT-23",
+        "KEPT-16"
+      ],
+      "estimate": 3,
+      "key": "KEPT-28",
+      "labels": [
+        "data",
+        "ops"
+      ],
+      "priority": 2,
+      "project": "p6",
+      "status": "backlog",
+      "steps": [
+        "`scripts/seed-moode-matcha.mjs`, run locally with the service-role key from `.env.local` (never committed).",
+        "Create the collection `moode-matcha` for `wade`, upload all 160 full and thumb files, insert refs and assets with the file facts from the JSON.",
+        "Publish it with the existing token `mm7q2x9kfa` so the board link you've already shared keeps working.",
+        "Idempotent: re-running skips what exists."
+      ],
+      "summary": "Your real collection has to move from `public/collections/` and `data/moode-matcha.json` into your account.",
+      "title": "Seed moode-matcha into Storage"
+    },
+    {
+      "acceptance": [
+        "`grep` of `dist/` finds no service-role key",
+        "Previews without secrets fall back to the mocks (D-4)"
+      ],
+      "blockedBy": [
+        "KEPT-7"
+      ],
+      "estimate": 1,
+      "key": "KEPT-29",
+      "labels": [
+        "infra",
+        "security"
+      ],
+      "priority": 1,
+      "project": "p6",
+      "status": "backlog",
+      "steps": [
+        "Vercel (Production + Preview): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_PUBLIC_ORIGIN`.",
+        "Edge Function secrets: service-role key, Resend key.",
+        "Local: `.env.local` for the app and the seed script; `.env.example` committed without values.",
+        "Check the production bundle for anything that looks like a service key before the first deploy."
+      ],
+      "summary": "Only the publishable key may reach the browser.",
+      "title": "Environment variables and secrets"
+    },
+    {
+      "acceptance": [
+        "All three pass on the production project before the domain switch"
+      ],
+      "blockedBy": [
+        "KEPT-28",
+        "KEPT-24",
+        "KEPT-26"
+      ],
+      "estimate": 3,
+      "key": "KEPT-30",
+      "labels": [
+        "security",
+        "ui"
+      ],
+      "priority": 1,
+      "project": "p6",
+      "status": "backlog",
+      "steps": [
+        "Re-run the pixel sweep against kept-ui with the same collection seeded: every route and state identical (share URLs excepted).",
+        "End to end: sign in → TOTP → create collection → upload → pin → tag → notes → publish → open board signed out → New link → Unpublish → invite request.",
+        "RLS tests from KEPT-9 pass against the deployed project.",
+        "Log a health run (`health/log.csv`) for the release."
+      ],
+      "summary": "Real data mustn't change how anything looks, and the security model needs proof, not assumption.",
+      "title": "Verify: pixel parity, end-to-end and RLS"
+    },
+    {
+      "acceptance": [
+        "kept.design serves the real app with real data"
+      ],
+      "blockedBy": [
+        "KEPT-30",
+        "KEPT-29",
+        "KEPT-1"
+      ],
+      "estimate": 1,
+      "key": "KEPT-31",
+      "labels": [
+        "ops"
+      ],
+      "priority": 1,
+      "project": "p6",
+      "status": "backlog",
+      "steps": [
+        "Merge to main → Vercel production deploy.",
+        "Point `kept.design` at the project; check `/`, `/library` (signed in), and a board signed out.",
+        "Tick “Ship to kept.design” in Kept's own To do page."
+      ],
+      "summary": "The finish line for v0.",
+      "title": "Ship to kept.design"
+    },
+    {
+      "acceptance": [],
+      "blockedBy": [],
+      "estimate": 5,
+      "key": "KEPT-32",
+      "labels": [
+        "kept-ui first",
+        "ui"
+      ],
+      "priority": 4,
+      "project": "p7",
+      "status": "backlog",
+      "steps": [],
+      "summary": "Pins only today. The schema already allows `kind = 'box'` with `w`/`h`. Design the drag-to-draw interaction in kept-ui first.",
+      "title": "Box annotations"
+    },
+    {
+      "acceptance": [],
+      "blockedBy": [],
+      "estimate": 2,
+      "key": "KEPT-33",
+      "labels": [
+        "kept-ui first",
+        "ui"
+      ],
+      "priority": 4,
+      "project": "p7",
+      "status": "backlog",
+      "steps": [],
+      "summary": "Uploads take the file name as the title. Needs an editable title in kept-ui, then `updateReference` accepts `title`.",
+      "title": "Rename references"
+    },
+    {
+      "acceptance": [],
+      "blockedBy": [],
+      "estimate": 5,
+      "key": "KEPT-34",
+      "labels": [
+        "db",
+        "ui"
+      ],
+      "priority": 4,
+      "project": "p7",
+      "status": "backlog",
+      "steps": [],
+      "summary": "When the library outgrows client filtering: an RPC over the `search` tsvector (titles, notes, tags, pin captions), and a Base UI Combobox palette designed in kept-ui.",
+      "title": "Server-side search and a command palette"
+    },
+    {
+      "acceptance": [],
+      "blockedBy": [],
+      "estimate": 3,
+      "key": "KEPT-35",
+      "labels": [
+        "edge function"
+      ],
+      "priority": 4,
+      "project": "p7",
+      "status": "backlog",
+      "steps": [],
+      "summary": "A preview card when a board link is pasted into a chat. A tiny OG endpoint for `/m/:token`, without moving the app to Next.js.",
+      "title": "Board link previews"
+    },
+    {
+      "acceptance": [],
+      "blockedBy": [],
+      "estimate": 3,
+      "key": "KEPT-36",
+      "labels": [
+        "storage",
+        "infra"
+      ],
+      "priority": 0,
+      "project": "p7",
+      "status": "backlog",
+      "steps": [],
+      "summary": "Out of scope for v0 by design. Revisit only if egress or storage costs become real.",
+      "title": "Move images to R2 if Storage costs bite"
+    }
+  ]
+}
