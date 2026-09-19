@@ -3,7 +3,7 @@
 //
 //   node scripts/sync-kept-ui.mjs [path/to/kept-ui]    (default: ../../Labs/kept-ui)
 //
-// Files that exist only here (tokens.css, navigate.ts) are left alone.
+// Files that exist only here (tokens.css, inputs.css, navigate.ts) are left alone.
 
 import { cpSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';

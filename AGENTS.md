@@ -21,6 +21,7 @@ The real Kept product: "a library you can actually operate". Vite + React + Base
 ## Hard rules
 
 - **Never touch kept-ui.** Don't write, install, or build in it. `npm run sync-kept-ui` only reads from it.
+- **Known differences from kept-ui** are listed in the README (boxed inputs on Sign in and Request an invite, in `src/kept/inputs.css`). Don't "fix" them back, and keep new differences in kept-design-only files like that one, never in the synced `Kept*.tsx` or `kept.css`, which the sync overwrites.
 - **New UI is designed in kept-ui first** (e.g. the two-factor screen, KEPT-14), approved by the owner, then synced. Don't invent screens here.
 - **Keep the seam.** Screens call `src/kept/repository.ts` and `src/kept/session.ts`. Keep their function names and return shapes exactly; put the Supabase code behind them.
 - **Secrets:** only the Supabase publishable key may be exposed to the browser (`VITE_` vars). The service-role key never goes in client code or a `VITE_` var, and no key is ever committed.

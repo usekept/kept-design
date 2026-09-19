@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { KeptApp } from './kept/KeptApp.tsx';
+import './kept/inputs.css';
 import { currentRoute, interceptLinks, onNavigate } from './kept/navigate.ts';
 
 // Every address is a Kept address. kept-ui reads its route from `#/kept/...`; here it's the path.
@@ -8,6 +9,13 @@ import { currentRoute, interceptLinks, onNavigate } from './kept/navigate.ts';
 function usePathRoute() {
   const route = React.useSyncExternalStore(onNavigate, currentRoute);
   React.useEffect(() => interceptLinks(), []);
+  // Lets inputs.css restyle single screens without touching the synced screen files.
+  React.useEffect(() => {
+    document.documentElement.dataset.keptRoute = route;
+    return () => {
+      delete document.documentElement.dataset.keptRoute;
+    };
+  }, [route]);
   const first = React.useRef(true);
   React.useEffect(() => {
     if (first.current) first.current = false;

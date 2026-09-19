@@ -20,7 +20,15 @@ npm run sync-kept-ui -- ../path/to/kept-ui
 ```
 
 Files that exist only here: `src/kept/tokens.css` (the tokens and base layers from kept-ui's
-`src/docs.css`, without the lab shell), `src/kept/navigate.ts` (history navigation) and `src/App.tsx`.
+`src/docs.css`, without the lab shell), `src/kept/navigate.ts` (history navigation) and `src/App.tsx`, plus `src/kept/inputs.css`.
+
+### Where kept-design differs from kept-ui
+
+- **Sign in and Request an invite use boxed inputs** (outlined Base UI inputs) instead of kept-ui's
+  ruled rows. The styling is in `src/kept/inputs.css`, keyed off `data-kept-route`, which `App.tsx` sets
+  on `<html>`, so `npm run sync-kept-ui` doesn't overwrite it. Every other screen still matches kept-ui
+  pixel for pixel; expect these two routes to differ in a screenshot diff.
+- Share links are real paths (`/m/<token>`), not `#/kept/m/<token>`.
 
 ## Routes
 

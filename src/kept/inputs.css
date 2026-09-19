@@ -1,0 +1,75 @@
+/*
+ * kept-design only: boxed inputs on Sign in and Request an invite.
+ *
+ * kept-ui draws these fields as ruled rows with no box. Here each control is an outlined Base UI
+ * input instead. This file isn't in kept-ui, so `npm run sync-kept-ui` never overwrites it, and it
+ * is keyed off `data-kept-route` (set in App.tsx) rather than class changes in the synced screens.
+ * The New collection dialog and every other form keep kept-ui's ruled look.
+ */
+@layer components {
+  :is([data-kept-route='login'], [data-kept-route='request']) .KeptForm {
+    /* Rows are separated by space, not rules */
+    .KeptList {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      border-top: 0;
+    }
+
+    .KeptField {
+      padding-block: 0;
+      border-bottom: 0;
+      gap: 0.5rem;
+
+      @media (min-width: 48rem) {
+        gap: 3rem;
+      }
+
+      /* The control draws its own focus state */
+      &:has(:focus-visible) {
+        box-shadow: none;
+      }
+    }
+
+    /* Line the label's text up with the text inside the box (border + padding) from 48rem */
+    .KeptFieldLabel {
+      @media (min-width: 48rem) {
+        padding-top: calc(0.625rem + 1px);
+      }
+    }
+
+    .KeptInput {
+      padding: 0.625rem 0.75rem;
+      border: 1px solid var(--gray-c3);
+      border-radius: var(--radius-4);
+      background-color: var(--gray-s1);
+      transition: border-color 100ms ease-out;
+
+      &:hover {
+        border-color: var(--gray-p1);
+      }
+
+      &:focus-visible {
+        border-color: var(--gray-t2);
+        outline: 2px solid var(--gray-t2);
+        outline-offset: 2px;
+      }
+
+      &[data-invalid] {
+        border-color: var(--poppy-t1);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+
+    .KeptTextarea {
+      min-height: 6.25rem;
+    }
+
+    .KeptTextareaShort {
+      min-height: 5.5rem;
+    }
+  }
+}
