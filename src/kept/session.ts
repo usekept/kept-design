@@ -1,6 +1,6 @@
-// Mock auth snapshotted from w-ade/kept-ui@d250e558.
-// Stands in for Supabase Auth (username + password, then TOTP to reach AAL2).
-// Invite-only: no sign-up. sessionStorage so a refresh mid-2FA stays on /login/mfa.
+// Mock auth for the lab. Stands in for Supabase Auth (username + password, then TOTP to reach AAL2).
+// Kept is invite-only: accounts are created by hand, so there is no sign-up call.
+// Lives in sessionStorage so a refresh mid-2FA keeps you on /login/mfa, as the v0 plan asks.
 
 export type AuthLevel = 'aal1' | 'aal2';
 

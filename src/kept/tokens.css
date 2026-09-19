@@ -4,7 +4,7 @@
  */
 @layer all, theme, components;
 
-/* Fonts: Geist Sans and Geist Mono (SIL OFL), loaded from npm in KeptApp.tsx */
+/* Fonts: Geist Sans and Geist Mono (SIL OFL), loaded from npm in main.tsx */
 
 @layer theme {
   :root {

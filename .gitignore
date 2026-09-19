@@ -5,3 +5,6 @@ dist
 .env
 .env.*
 !.env.example
+
+# Collection images are synced from kept-ui (scripts/sync-kept-ui.mjs) until the backend serves them.
+public/collections/

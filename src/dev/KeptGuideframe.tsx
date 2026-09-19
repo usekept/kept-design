@@ -1,4 +1,4 @@
-import { GuideframeGrid } from "@guideframe/react"
+import { GuideframeGrid } from "@guideframe/react";
 
 // Dev-only layout overlay (Cmd/Ctrl + G), set to the Kept page grid:
 // 8 columns, 40px gaps (48px from 48rem), 24px page padding (48px from 48rem),
@@ -14,5 +14,5 @@ export default function KeptGuideframe() {
       maxWidth={1480 + 48 * 2}
       breakpoints={{ tablet: 768, desktop: 1024 }}
     />
-  )
+  );
 }
