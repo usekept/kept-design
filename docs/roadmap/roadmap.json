@@ -213,10 +213,10 @@
       "labels": [
         "ops"
       ],
-      "notes": "An automated merge was blocked by the permission check last session, so this needs your go-ahead or a merge on GitHub.",
+      "notes": "An automated merge was blocked by the permission check last session, so this needs your go-ahead or a merge on GitHub. Merged 2026-09-19 as 4248833; Vercel deploy succeeded and kept.design serves the new UI.",
       "priority": 1,
       "project": "p0",
-      "status": "todo",
+      "status": "done",
       "steps": [
         "Merge PR #4, resolving conflicts in favour of #4 (it's a superset of #3 and verified).",
         "Keep #3's committed `public/collections/` images and drop #4's `.gitignore` line for them, so production has images until Storage takes over.",

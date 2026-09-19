@@ -4,7 +4,7 @@
 
 Wire Kept's finished UI (a pixel copy of the kept-ui lab) to Supabase: Postgres, Auth, Storage and two Edge Functions, behind the exact functions the screens already call, so no screen changes.
 
-**Progress:** 1 of 37 issues done.
+**Progress:** 2 of 37 issues done.
 
 ## How it fits together
 
@@ -89,12 +89,12 @@ PR #3 already committed the 320 moode-matcha files to main (the repo is public).
 
 ## Phases
 
-### Ground work (1/7)
+### Ground work (2/7)
 
 Get PR #4 onto main, settle the open calls, and protect the data layer from the sync script. _Target: Before any backend code._
 
 - [x] **KEPT-0** Recreate the kept-ui UI in kept-design — Done, High
-- [ ] **KEPT-1** Merge PR #4 into main — Todo, Urgent
+- [x] **KEPT-1** Merge PR #4 into main — Done, Urgent
 - [ ] **KEPT-2** Decide how usernames sign in (D-1) — Todo, High
 - [ ] **KEPT-3** Decide how board images are served (D-2) — Todo, High
 - [ ] **KEPT-4** Decide where Supabase is provisioned (D-3) — Todo, High
@@ -190,7 +190,7 @@ Worth doing, not needed for v0: box annotations, renaming, server search, share 
 
 ### KEPT-1 · Merge PR #4 into main
 
-- **Status:** Todo · **Priority:** Urgent · **Estimate:** 1 pt · **Phase:** Ground work
+- **Status:** Done · **Priority:** Urgent · **Estimate:** 1 pt · **Phase:** Ground work
 - **Labels:** ops
 - **Blocks:** KEPT-31
 
@@ -204,11 +204,11 @@ Worth doing, not needed for v0: box annotations, renaming, server search, share 
 
 **Done when**
 
-- [ ] main contains `7e9ddba`'s tree plus the images
-- [ ] `npm run build` passes on main
-- [ ] Vercel production shows the kept-ui landing
+- [x] main contains `7e9ddba`'s tree plus the images
+- [x] `npm run build` passes on main
+- [x] Vercel production shows the kept-ui landing
 
-**Notes.** An automated merge was blocked by the permission check last session, so this needs your go-ahead or a merge on GitHub.
+**Notes.** An automated merge was blocked by the permission check last session, so this needs your go-ahead or a merge on GitHub. Merged 2026-09-19 as 4248833; Vercel deploy succeeded and kept.design serves the new UI.
 
 ### KEPT-2 · Decide how usernames sign in (D-1)
 
