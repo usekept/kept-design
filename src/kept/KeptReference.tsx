@@ -20,6 +20,7 @@ import {
   type Pin,
   type Reference,
 } from './repository.ts';
+import { navigate } from './navigate.ts';
 
 // /library/:collectionId/:referenceId: one reference with its details, notes, tags and pins.
 export function KeptReference({
@@ -71,7 +72,7 @@ export function KeptReference({
               : undefined;
       if (href) {
         event.preventDefault();
-        window.location.assign(href);
+        navigate(href);
       }
     };
     window.addEventListener('keydown', onKeyDown);

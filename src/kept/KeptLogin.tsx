@@ -4,6 +4,7 @@ import { Field } from '@base-ui/react/field';
 import { Form } from '@base-ui/react/form';
 import { ArrowIcon, Separator } from './parts.tsx';
 import { signInWithPassword } from './session.ts';
+import { navigate } from './navigate.ts';
 
 // /login: username + password (invite-only; accounts are created by hand).
 // Two-factor comes later; for now success goes straight to the library.
@@ -52,7 +53,7 @@ export function KeptLogin() {
               setErrors({ [error.field]: error.message });
               return;
             }
-            window.location.assign('/library');
+            navigate('/library');
           }}
         >
           <div className="KeptList">

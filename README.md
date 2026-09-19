@@ -5,62 +5,49 @@ organizing, contextualizing, and retrieving visual references.
 
 > A library you can actually operate.
 
-The durable product is the reference system — not a moodboard, not a canvas,
-and not a generic file locker. Product UI is a snapshot of
-[w-ade/kept-ui](https://github.com/w-ade/kept-ui) at `cb6dd28` (`src/kept/`),
-wired to real SPA paths. The lab Base UI docs playground (`src/demos/`) is
-not in this repo.
+## Where the UI comes from
 
-## Product model
+The UI is a copy of the [kept-ui](https://github.com/w-ade/kept-ui) lab, which is the source of
+truth for how Kept looks and behaves. Its UI spec is `docs/ui.html` in that repo. The lab uses
+`#/kept/...` hash routes; here the same screens run on real paths.
 
-The central object is a **Reference**, not a File. A reference can hold one or
-more **Assets** (stored files), source information, notes, collections, tags,
-and typed directional relationships to other references.
+`scripts/sync-kept-ui.mjs` copies `src/kept` and the imported collection images out of a local
+kept-ui checkout and rewrites its hash routes into paths. It only reads from kept-ui.
 
-The fundamental actions are:
+```sh
+npm run sync-kept-ui              # expects kept-ui at ../../Labs/kept-ui
+npm run sync-kept-ui -- ../path/to/kept-ui
+```
 
-- **Capture** — Create a record.
-- **Index** — Give it structure through metadata, tags, and attributes.
-- **Annotate** — Add personal meaning and context.
-- **Organize** — Collections and tags.
-- **Query** — Search and filter the database.
-- **Retrieve** — Actually find a reference again and understand why it matters.
-- **Connect** — Relate one reference to another.
+Files that exist only here: `src/kept/tokens.css` (the tokens and base layers from kept-ui's
+`src/docs.css`, without the lab shell), `src/kept/navigate.ts` (history navigation) and `src/App.tsx`.
 
-## Current state
+## Routes
 
-- `/` — kept-ui landing.
-- `/login` — mock username + password.
-- `/login/mfa` — TOTP stand-in (continue without a code).
-- `/request` — request an invite.
-- `/library` — collections index (app home). Signed in.
-- `/library/:id` — operate a collection.
-- `/library/:id/:referenceId` — one reference.
-- `/m/:token` — unlisted read-only board. No chrome, no login.
-- `/map` — kept-ui system map.
-- `/todo`, `/settings`, `/referral` — account menu pages.
-- `/ios` — Kept on iOS, linked from the map.
+- `/`: landing
+- `/login`, `/login/mfa`, `/request`: sign in, two-factor (placeholder), request an invite
+- `/library`: collections and All references
+- `/library/:collectionId`, `/library/:collectionId/:referenceId`: a collection, one reference
+- `/m/:token`: a published board (no sign-in)
+- `/map`, `/ios`: system map, Kept on iOS plan
+- `/todo`, `/settings`, `/referral`: account pages
 
-Persistence is the mock in `src/kept/repository.ts`. Session is mocked in
-`src/kept/session.ts` (lab account `wade` / `1234`). Swap those for Supabase
-later; do not block the UI on it.
+## Data
 
-Stack: Vite + React 19 + `@base-ui/react` + Geist.
+Still mocked: `src/kept/repository.ts` (collections, references, shares, invite requests) and
+`src/kept/session.ts` (lab account `wade` / `1234`). The real backend swaps in behind the same
+functions. Collection images are synced into `public/collections/` and git-ignored until the
+backend serves them.
 
 ## Run locally
 
 ```sh
 npm install
-npm run dev
+npm run dev        # http://localhost:5173, also on your network
+npm run build      # typecheck, then build to dist/
 ```
 
-Open the URL Vite prints (default http://localhost:5173). For a phone on the
-same network, run `npm run dev -- --host 0.0.0.0`.
+In dev, Cmd/Ctrl + G toggles a GuideFrame overlay set to Kept's 8-column page grid.
 
-```sh
-npm run build
-npm run preview
-```
-
-Vercel continues to use the existing Vite configuration and `dist` output,
-with a SPA rewrite so operate routes load `index.html`.
+Vercel builds with `npm run build` and serves `dist` with a SPA rewrite, so every path loads
+`index.html`.

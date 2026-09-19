@@ -15,9 +15,11 @@ import { KeptTodo } from './KeptTodo.tsx';
 import { ArrowIcon, ArrowLink, Separator } from './parts.tsx';
 import { completeMfaForLab, getSession } from './session.ts';
 import './kept.css';
+import { navigate } from './navigate.ts';
 
-// Snapshot of w-ade/kept-ui@cb6dd28 product UI, wired to real SPA paths.
-// Shells follow the lab: marketing/auth/app chrome plus a chrome-less board.
+// Kept, synced from the kept-ui lab (scripts/sync-kept-ui.mjs). Routes are real paths.
+// Shells are modeled on the base-ui.com homepage ((website)/layout.tsx + page.tsx):
+// an 8-column grid where sections are `display: contents` and labels sit in the left gutter.
 
 type Shell = 'marketing' | 'auth' | 'app' | 'board';
 
@@ -64,7 +66,7 @@ function useAuthGate(route: string) {
         : '/login';
 
   React.useEffect(() => {
-    if (redirect) window.location.replace(redirect);
+    if (redirect) navigate(redirect, 'replace');
   }, [redirect]);
 
   return redirect !== null;
@@ -160,7 +162,7 @@ function KeptMfaPlaceholder() {
           className="KeptLink KeptLinkArrow KeptText2 KeptButtonReset"
           onClick={() => {
             completeMfaForLab();
-            window.location.assign('/library');
+            navigate('/library');
           }}
         >
           Continue to library

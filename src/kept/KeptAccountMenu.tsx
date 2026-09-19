@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Menu } from '@base-ui/react/menu';
 import { signOut } from './session.ts';
 import { getTheme, setTheme, type Theme } from './theme.ts';
+import { navigate } from './navigate.ts';
 
 // The signed-in user's menu, opened from their name in the header.
 export function AccountMenu({ username }: { username: string }) {
@@ -69,7 +70,7 @@ export function AccountMenu({ username }: { username: string }) {
               className="KeptMenuItem KeptText1"
               onClick={() => {
                 signOut();
-                window.location.assign('/');
+                navigate('/');
               }}
             >
               Sign out

@@ -1,5 +1,5 @@
 // Light / dark mode. "system" follows the phone or computer setting; the others override it
-// by setting data-theme on <html>, which tokens.css reads. Remembered in this browser.
+// by setting data-theme on <html>, which docs.css reads. Remembered in this browser.
 
 export type Theme = 'system' | 'light' | 'dark';
 
