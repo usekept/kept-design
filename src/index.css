@@ -22,7 +22,12 @@
   font-display: swap;
 }
 
-:root {
+/*
+ * Legacy product styles, now used only by /map (SystemMap.jsx) until it's replaced by
+ * kept-ui's KeptMap. Everything is scoped to .page so none of it reaches the Kept screens,
+ * whose tokens and base styles come from src/kept/tokens.css.
+ */
+.page {
   color-scheme: light;
   --paper: #ffffff;
   --accent-light: color-mix(in srgb, var(--accent) 10%, var(--paper));
@@ -33,22 +38,6 @@
   --page-width: 71.5rem;
   --page-gutter: clamp(1.25rem, 4vw, 4rem);
   /* --accent is supplied by src/config/site.js through the entry point. */
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-}
-
-#root {
-  isolation: isolate;
-}
-
-body {
   position: relative;
   background: var(--paper);
   color: #000000;
@@ -56,10 +45,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button,
-input,
-textarea,
-select {
+.page button,
+.page input,
+.page textarea,
+.page select {
   font: inherit;
 }
 
@@ -74,7 +63,7 @@ select {
   outline-offset: 4px;
 }
 
-::selection {
+.page ::selection {
   background: #FFC7FF;
   color: #000000;
 }

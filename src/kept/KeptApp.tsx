@@ -4,6 +4,7 @@ import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import { KeptBoard } from './KeptBoard.tsx';
 import { KeptCollection } from './KeptCollection.tsx';
+import { KeptLanding } from './KeptLanding.tsx';
 import { KeptLibrary } from './KeptLibrary.tsx';
 import { KeptLogin } from './KeptLogin.tsx';
 import { KeptReference } from './KeptReference.tsx';
@@ -16,16 +17,21 @@ import './kept.css';
 // Snapshot of w-ade/kept-ui@d250e558 operate UI, wired to product SPA paths.
 // Shells follow the lab: marketing/auth/app chrome plus a chrome-less board.
 
-type Shell = 'auth' | 'app' | 'board';
+type Shell = 'marketing' | 'auth' | 'app' | 'board';
 
-const AUTH_NAV = [{ href: href.home, label: 'Landing', route: 'home' }];
-const APP_NAV = [
+const MARKETING_NAV = [
+  { href: href.home, label: 'Landing', route: 'home' },
   { href: href.library, label: 'Library', route: 'library' },
   { href: href.map, label: 'Map', route: 'map' },
 ];
+const AUTH_NAV = MARKETING_NAV.slice(0, 1);
+const APP_NAV = MARKETING_NAV.slice(1);
 
 function shellFor(route: KeptRoute): Shell {
   switch (route.kind) {
+    case 'home':
+    case 'unknown':
+      return 'marketing';
     case 'board':
       return 'board';
     case 'login':
@@ -34,7 +40,6 @@ function shellFor(route: KeptRoute): Shell {
       return 'auth';
     case 'library':
     case 'collection':
-    case 'unknown':
       return 'app';
     default: {
       const _exhaustive: never = route;
@@ -45,6 +50,8 @@ function shellFor(route: KeptRoute): Shell {
 
 function titleFor(route: KeptRoute) {
   switch (route.kind) {
+    case 'home':
+      return 'KEPT — A library you can actually operate.';
     case 'login':
       return 'Sign in · KEPT';
     case 'mfa':
@@ -111,13 +118,20 @@ export function KeptApp() {
     return <KeptBoard key={token} token={token} />;
   }
 
-  const nav = shell === 'app' ? APP_NAV : AUTH_NAV;
+  const nav = shell === 'app' ? APP_NAV : shell === 'auth' ? AUTH_NAV : MARKETING_NAV;
   const session = getSession();
   const currentNav =
-    route.kind === 'library' || route.kind === 'collection' ? 'library' : null;
+    route.kind === 'home'
+      ? 'home'
+      : route.kind === 'library' || route.kind === 'collection'
+        ? 'library'
+        : null;
 
   let content: React.ReactNode;
   switch (route.kind) {
+    case 'home':
+      content = <KeptLanding />;
+      break;
     case 'login':
       content = <KeptLogin />;
       break;

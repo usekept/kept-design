@@ -23,6 +23,7 @@ export function go(path: string, mode: 'assign' | 'replace' = 'assign') {
 }
 
 export type KeptRoute =
+  | { kind: 'home' }
   | { kind: 'login' }
   | { kind: 'mfa' }
   | { kind: 'request' }
@@ -36,6 +37,7 @@ export function parseKeptRoute(pathname = window.location.pathname, search = win
   const parts = path.split('/').filter(Boolean);
   const referenceParam = new URLSearchParams(search).get('r');
 
+  if (path === '/') return { kind: 'home' };
   if (path === '/login') return { kind: 'login' };
   if (path === '/login/mfa') return { kind: 'mfa' };
   if (path === '/request') return { kind: 'request' };
@@ -53,16 +55,4 @@ export function parseKeptRoute(pathname = window.location.pathname, search = win
     return { kind: 'board', token: decodeURIComponent(parts.slice(1).join('/')) };
   }
   return { kind: 'unknown' };
-}
-
-export function isKeptOperatePath(pathname = window.location.pathname) {
-  const path = pathname.replace(/\/+$/, '') || '/';
-  return (
-    path === '/login' ||
-    path === '/login/mfa' ||
-    path === '/request' ||
-    path === '/library' ||
-    path.startsWith('/library/') ||
-    path.startsWith('/m/')
-  );
 }
